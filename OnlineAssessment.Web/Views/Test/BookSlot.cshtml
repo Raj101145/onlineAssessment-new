@@ -1,0 +1,520 @@
+@model OnlineAssessment.Web.Models.Test
+
+@{
+    ViewData["Title"] = "Book Test Slot";
+}
+
+@section Styles {
+    <style>
+        .booking-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: calc(100vh - 80px);
+            padding: 2rem 0;
+            position: relative;
+            z-index: 1;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+            z-index: 10;
+        }
+
+        .card-header {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 1.5rem;
+        }
+
+        .card-body {
+            background: white;
+            padding: 2rem;
+        }
+
+        .test-info {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .test-info h5 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .test-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .test-info-item i {
+            color: #3498db;
+            margin-right: 0.5rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .date-selector {
+            display: flex;
+            overflow-x: auto;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        .date-card {
+            min-width: 120px;
+            padding: 1rem;
+            margin-right: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #e0e0e0;
+        }
+
+        .date-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .date-card.active {
+            border-color: #3498db;
+            background-color: #ebf5fb;
+        }
+
+        .date-card .day {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .date-card .date {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #3498db;
+        }
+
+        .date-card .month {
+            font-size: 1rem;
+            color: #7f8c8d;
+        }
+
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .time-slot {
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .time-slot:hover {
+            border-color: #3498db;
+            background-color: #ebf5fb;
+        }
+
+        .time-slot.active {
+            border-color: #3498db;
+            background-color: #ebf5fb;
+        }
+
+        .time-slot.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background-color: #f8f9fa;
+        }
+
+        .time-slot .time {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .time-slot .availability {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-top: 0.5rem;
+        }
+
+        .time-slot .availability-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .time-slot .availability-indicator.available {
+            background-color: #2ecc71;
+        }
+
+        .time-slot .availability-indicator.limited {
+            background-color: #f39c12;
+        }
+
+        .time-slot .availability-indicator.full {
+            background-color: #e74c3c;
+        }
+
+        .booking-info {
+            border-left: 4px solid #3498db;
+            padding: 15px;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            border: none;
+            padding: 0.8rem 2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-primary:disabled {
+            background-color: #bdc3c7;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Loading spinner */
+        .spinner-border {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-width: 0.2rem;
+        }
+
+        /* Animation for slot selection */
+        @@keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .pulse {
+            animation: pulse 0.5s ease-in-out;
+        }
+    </style>
+}
+
+<div class="booking-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <div class="card">
+                    <div class="card-header text-center">
+                        @if (ViewBag.IsReattempt == true)
+                        {
+                            <h3 class="mb-0">Book Your Test Retake Slot</h3>
+                        }
+                        else
+                        {
+                            <h3 class="mb-0">Book Your Test Slot</h3>
+                        }
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(ViewBag.Error as string))
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-circle me-2"></i> @ViewBag.Error
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(ViewBag.Message as string))
+                        {
+                            <div class="alert alert-success" role="alert">
+                                <i class="fas fa-check-circle me-2"></i> @ViewBag.Message
+                            </div>
+                        }
+
+                        <div class="test-info">
+                            <h5>Test Information</h5>
+                            <div class="test-info-item">
+                                <i class="fas fa-clipboard-list"></i>
+                                <span><strong>Test:</strong> @Model.Title</span>
+                            </div>
+                            <div class="test-info-item">
+                                <i class="fas fa-align-left"></i>
+                                <span><strong>Description:</strong> @Model.Description</span>
+                            </div>
+                            <div class="test-info-item">
+                                <i class="fas fa-clock"></i>
+                                <span><strong>Duration:</strong> @Model.DurationMinutes minutes</span>
+                            </div>
+                            <div class="test-info-item">
+                                <i class="fas fa-tag"></i>
+                                <span><strong>Domain:</strong> @Model.Domain</span>
+                            </div>
+                            <div class="test-info-item">
+                                <i class="fas fa-redo"></i>
+                                <span><strong>Attempts:</strong> @Model.MaxAttempts</span>
+                            </div>
+                        </div>
+
+                        @if (ViewBag.IsReattempt == true)
+                        {
+                            <div class="booking-info alert alert-warning">
+                                <i class="fas fa-redo-alt"></i> <strong>Test Retake:</strong> You are booking a slot to retake this test. You have already taken this test @ViewBag.AttemptCount time(s). You will need to pay for this retake after selecting a slot.
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="booking-info alert alert-info">
+                                <i class="fas fa-info-circle"></i> <strong>Slot Booking:</strong> Please select your preferred date and time slot. Once confirmed, you'll be able to access the test during your selected time.
+                            </div>
+                        }
+
+                        <form id="bookingForm" method="post" action="@Url.Action("ProcessBooking", "Test", new { id = Model.Id, isReattempt = ViewBag.IsReattempt ?? false })">
+                            @Html.AntiForgeryToken()
+                            <h5 class="mb-3">Select a Date</h5>
+                            <div class="date-selector">
+                                @{
+                                    var today = DateTime.Today;
+                                    var daysOfWeek = new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+                                    var months = new[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+                                }
+
+                                @for (int i = 0; i < 7; i++)
+                                {
+                                    var date = today.AddDays(i);
+                                    var isActive = i == 0 ? "active" : "";
+                                    <div class="date-card @isActive" data-date="@date.ToString("yyyy-MM-dd")">
+                                        <div class="day">@daysOfWeek[(int)date.DayOfWeek]</div>
+                                        <div class="date">@date.Day</div>
+                                        <div class="month">@months[date.Month - 1]</div>
+                                    </div>
+                                }
+                            </div>
+
+                            <h5 class="mb-3">Select Your Test Time Slot</h5>
+                            <div class="time-slots mb-4">
+                                <div class="time-slot" data-slot="1">
+                                    <div class="time">Slot 1</div>
+                                    <div class="slot-time">9:00 AM - 11:00 AM</div>
+                                    <div class="availability">
+                                        <span class="availability-indicator available"></span>
+                                        <span class="availability-text">Checking...</span>
+                                    </div>
+                                </div>
+                                <div class="time-slot" data-slot="2">
+                                    <div class="time">Slot 2</div>
+                                    <div class="slot-time">12:00 PM - 2:00 PM</div>
+                                    <div class="availability">
+                                        <span class="availability-indicator available"></span>
+                                        <span class="availability-text">Checking...</span>
+                                    </div>
+                                </div>
+                                <div class="time-slot" data-slot="3">
+                                    <div class="time">Slot 3</div>
+                                    <div class="slot-time">3:00 PM - 5:00 PM</div>
+                                    <div class="availability">
+                                        <span class="availability-indicator available"></span>
+                                        <span class="availability-text">Checking...</span>
+                                    </div>
+                                </div>
+                                <div class="time-slot" data-slot="4">
+                                    <div class="time">Slot 4</div>
+                                    <div class="slot-time">6:00 PM - 8:00 PM</div>
+                                    <div class="availability">
+                                        <span class="availability-indicator available"></span>
+                                        <span class="availability-text">Checking...</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="alert alert-info time-validation-message" style="display: none;">
+                                <i class="fas fa-info-circle"></i> <span id="timeValidationMessage"></span>
+                            </div>
+
+                            <div class="alert alert-success time-availability" style="display: none;">
+                                <i class="fas fa-check-circle"></i> <span>This time slot is available!</span>
+                            </div>
+
+                            <input type="hidden" id="selectedDate" name="selectedDate" value="@today.ToString("yyyy-MM-dd")" />
+
+                            <input type="hidden" id="selectedSlot" name="selectedSlot" value="1" /> <!-- Default to 1, will be set by JS -->
+                            <input type="hidden" id="selectedStartTime" name="selectedStartTime" value="" />
+                            <input type="hidden" id="selectedEndTime" name="selectedEndTime" value="" />
+                            <div>Selected Date (debug): <span id="debugSelectedDate"></span></div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                                <a href="@Url.Action("Index", "Test")" class="btn btn-outline-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Tests
+                                </a>
+                                <button id="bookButton" type="submit" class="btn btn-primary" disabled>
+                                    @if (ViewBag.IsReattempt == true)
+                                    {
+                                        <text><i class="fas fa-credit-card me-2"></i> Proceed to Payment</text>
+                                    }
+                                    else
+                                    {
+                                        <text><i class="fas fa-calendar-check me-2"></i> Book Now</text>
+                                    }
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateCards = document.querySelectorAll('.date-card');
+            const timeSlots = document.querySelectorAll('.time-slot');
+            const selectedDateInput = document.getElementById('selectedDate');
+            const selectedSlotInput = document.getElementById('selectedSlot');
+            const selectedStartTimeInput = document.getElementById('selectedStartTime');
+            const selectedEndTimeInput = document.getElementById('selectedEndTime');
+            const bookButton = document.getElementById('bookButton');
+            const timeValidationMessage = document.getElementById('timeValidationMessage');
+            const timeValidationAlert = document.querySelector('.time-validation-message');
+            const timeAvailabilityAlert = document.querySelector('.time-availability');
+            const testId = @Model.Id;
+            const nowServer = new Date('@DateTime.Now.ToString("yyyy-MM-ddTHH:mm:ss")');
+
+            const fixedTimeSlots = {
+                1: { startTime: '09:00', endTime: '11:00', displayTime: '9:00 AM - 11:00 AM' },
+                2: { startTime: '12:00', endTime: '14:00', displayTime: '12:00 PM - 2:00 PM' },
+                3: { startTime: '15:00', endTime: '17:00', displayTime: '3:00 PM - 5:00 PM' },
+                4: { startTime: '18:00', endTime: '20:00', displayTime: '6:00 PM - 8:00 PM' }
+            };
+
+            function isPastSlot(date, slotNum) {
+                const slot = fixedTimeSlots[slotNum];
+                if (!slot) return true;
+                const slotEnd = new Date(date + 'T' + slot.endTime + ':00');
+                return slotEnd < nowServer;
+            }
+
+            function setSlotsChecking() {
+                timeSlots.forEach(slot => {
+                    slot.querySelector('.availability-text').textContent = 'Checking...';
+                });
+            }
+
+            function updateSlotAvailability(slotElement, availabilityData, date) {
+                const slotNum = parseInt(slotElement.getAttribute('data-slot'));
+                const availabilityIndicator = slotElement.querySelector('.availability-indicator');
+                const availabilityText = slotElement.querySelector('.availability-text');
+                if (isPastSlot(date, slotNum)) {
+                    availabilityIndicator.className = 'availability-indicator full';
+                    availabilityText.textContent = 'Past Slot';
+                    slotElement.classList.add('disabled');
+                    return;
+                }
+                if (availabilityData.isAvailable) {
+                    const remainingSpots = availabilityData.maxCount - availabilityData.currentCount;
+                    if (remainingSpots > 100) {
+                        availabilityIndicator.className = 'availability-indicator available';
+                        availabilityText.textContent = `Available (${remainingSpots} spots)`;
+                        slotElement.classList.remove('disabled');
+                    } else if (remainingSpots > 0) {
+                        availabilityIndicator.className = 'availability-indicator limited';
+                        availabilityText.textContent = `Limited (${remainingSpots} spots)`;
+                        slotElement.classList.remove('disabled');
+                    } else {
+                        availabilityIndicator.className = 'availability-indicator full';
+                        availabilityText.textContent = 'Full';
+                        slotElement.classList.add('disabled');
+                    }
+                } else {
+                    availabilityIndicator.className = 'availability-indicator full';
+                    availabilityText.textContent = 'Full';
+                    slotElement.classList.add('disabled');
+                }
+            }
+
+            async function checkSlotAvailability(date, slotNumber) {
+                try {
+                    const response = await fetch(`/Test/CheckSlotAvailability?testId=${testId}&date=${date}&slotNumber=${slotNumber}`);
+                    const data = await response.json();
+                    return data;
+                } catch (error) {
+                    return { isAvailable: false, message: 'Error checking availability', currentCount: 0, maxCount: 200 };
+                }
+            }
+
+            async function checkAllSlotsForDate(date) {
+                setSlotsChecking();
+                for (let i = 1; i <= 4; i++) {
+                    const slotElement = document.querySelector(`.time-slot[data-slot="${i}"]`);
+                    const availabilityData = await checkSlotAvailability(date, i);
+                    updateSlotAvailability(slotElement, availabilityData, date);
+                }
+            }
+
+            // Date card click logic
+            dateCards.forEach(card => {
+                card.addEventListener('click', async function() {
+                    dateCards.forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    selectedDateInput.value = this.dataset.date;
+                    document.getElementById('debugSelectedDate').innerText = selectedDateInput.value;
+                    setSlotsChecking();
+                    // Reset slot selection
+                    timeSlots.forEach(slot => slot.classList.remove('active'));
+                    selectedSlotInput.value = '';
+                    selectedStartTimeInput.value = '';
+                    selectedEndTimeInput.value = '';
+                    bookButton.disabled = true;
+                    await checkAllSlotsForDate(this.dataset.date);
+                });
+            });
+
+            // Slot click logic
+            timeSlots.forEach(slot => {
+                slot.addEventListener('click', function() {
+                    if (this.classList.contains('disabled')) {
+                        timeValidationAlert.style.display = 'block';
+                        timeValidationMessage.textContent = 'The time slot you have selected has already passed, is full, or is otherwise unavailable.';
+                        return;
+                    } else {
+                        timeValidationAlert.style.display = 'none';
+                    }
+                    timeSlots.forEach(s => s.classList.remove('active'));
+                    this.classList.add('active');
+                    this.classList.add('pulse');
+                    setTimeout(() => this.classList.remove('pulse'), 500);
+                    const slotNumber = this.dataset.slot;
+                    const slotData = fixedTimeSlots[slotNumber];
+                    selectedSlotInput.value = slotNumber;
+                    selectedStartTimeInput.value = slotData.startTime;
+                    selectedEndTimeInput.value = slotData.endTime;
+                    bookButton.disabled = false;
+                    timeAvailabilityAlert.style.display = 'block';
+                });
+            });
+
+            // Default: select first date and check slots
+            if (dateCards.length > 0) {
+                dateCards[0].classList.add('active');
+                selectedDateInput.value = dateCards[0].dataset.date;
+                document.getElementById('debugSelectedDate').innerText = selectedDateInput.value;
+                checkAllSlotsForDate(selectedDateInput.value);
+            }
+        });
+    </script>
+}

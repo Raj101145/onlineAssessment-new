@@ -1,0 +1,17 @@
+@{
+    var adId = Guid.NewGuid().ToString().Substring(0, 8);
+}
+
+<div class="ad-container my-4">
+    <!-- Google AdSense Ad Unit -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-8504842908769623"
+         data-ad-slot="1234567890"
+         data-ad-format="auto"
+         data-full-width-responsive="true"
+         id="@adId"></ins>
+    <script>
+        (adsbygoogle = window.adsbygoogle || []).push({});
+    </script>
+</div>

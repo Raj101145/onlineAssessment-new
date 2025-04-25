@@ -1,0 +1,217 @@
+@model IEnumerable<OnlineAssessment.Web.Models.CategoryQuestions>
+
+@{
+    ViewData["Title"] = "Category Questions";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Category Question Banks</h2>
+        <a href="@Url.Action("Create", "CategoryQuestions")" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Upload New Question Set
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <p class="card-text">
+                Manage your category-specific question banks. Upload question sets for different categories to use when creating tests.
+            </p>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info mt-4">
+            <i class="fas fa-info-circle"></i> You haven't uploaded any category question sets yet.
+            <a href="@Url.Action("Create", "CategoryQuestions")">Upload your first question set</a>.
+        </div>
+    }
+    else
+    {
+        <div class="row mt-4">
+            @foreach (var item in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">@item.Category</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text">
+                                <strong>Questions:</strong> @(item.Questions?.Count ?? 0)
+                            </p>
+                            <p class="card-text">
+                                <strong>Created:</strong> @item.CreatedAt.ToString("MMM dd, yyyy")
+                            </p>
+                            <a href="@Url.Action("Create", "CategoryQuestions", new { category = item.Category })" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Update
+                            </a>
+                            <button onclick="deleteCategoryQuestions(@item.Id)" class="btn btn-sm btn-danger">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                        <div class="card-footer d-flex justify-content-between">
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <strong>Available Categories:</strong>
+                    <ul>
+                        <li>Business Development Internships</li>
+                        <li>Portfolio Internships</li>
+                        <li>Sales Internships</li>
+                        <li>Software Development Internships</li>
+                        <li>Web Development Internships</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        async function deleteCategoryQuestions(id) {
+            try {
+                // Create a Bootstrap modal for confirmation
+                const confirmModal = document.createElement('div');
+                confirmModal.className = 'modal fade';
+                confirmModal.innerHTML = `
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Confirm Deletion</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Are you sure you want to delete this question set? This action cannot be undone.</p>
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <strong>Warning:</strong> This will permanently delete the question set and all its questions.
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-danger" id="confirmDelete">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(confirmModal);
+                const modal = new bootstrap.Modal(confirmModal);
+                modal.show();
+
+                confirmModal.querySelector('#confirmDelete').addEventListener('click', async function() {
+                    const deleteButton = this;
+                    deleteButton.disabled = true;
+                    deleteButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Deleting...';
+
+                    try {
+                        const response = await fetch(`/CategoryQuestions/Delete/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            // Show success message
+                            const toast = document.createElement('div');
+                            toast.className = 'position-fixed bottom-0 end-0 p-3';
+                            toast.style.zIndex = '5';
+                            toast.innerHTML = `
+                                <div class="toast align-items-center text-white bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="d-flex">
+                                        <div class="toast-body">
+                                            <i class="fas fa-check-circle me-2"></i> ${result.message}
+                                        </div>
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                                    </div>
+                                </div>
+                            `;
+                            document.body.appendChild(toast);
+                            const toastEl = new bootstrap.Toast(toast.querySelector('.toast'));
+                            toastEl.show();
+
+                            // Remove the card from the page with animation
+                            const card = document.querySelector(`button[onclick="deleteCategoryQuestions(${id})"]`).closest('.col-md-4');
+                            if (card) {
+                                card.style.transition = 'all 0.3s ease';
+                                card.style.opacity = '0';
+                                setTimeout(() => {
+                                    card.remove();
+                                    // Check if there are no more cards
+                                    const remainingCards = document.querySelectorAll('.col-md-4');
+                                    if (remainingCards.length === 0) {
+                                        location.reload(); // Reload to show empty state
+                                    }
+                                }, 300);
+                            }
+                        } else {
+                            // Show error message
+                            const toast = document.createElement('div');
+                            toast.className = 'position-fixed bottom-0 end-0 p-3';
+                            toast.style.zIndex = '5';
+                            toast.innerHTML = `
+                                <div class="toast align-items-center text-white bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+                                    <div class="d-flex">
+                                        <div class="toast-body">
+                                            <i class="fas fa-exclamation-circle me-2"></i> ${result.message}
+                                        </div>
+                                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                                    </div>
+                                </div>
+                            `;
+                            document.body.appendChild(toast);
+                            const toastEl = new bootstrap.Toast(toast.querySelector('.toast'));
+                            toastEl.show();
+
+                            deleteButton.disabled = false;
+                            deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete';
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        // Show error message
+                        const toast = document.createElement('div');
+                        toast.className = 'position-fixed bottom-0 end-0 p-3';
+                        toast.style.zIndex = '5';
+                        toast.innerHTML = `
+                            <div class="toast align-items-center text-white bg-danger" role="alert" aria-live="assertive" aria-atomic="true">
+                                <div class="d-flex">
+                                    <div class="toast-body">
+                                        <i class="fas fa-exclamation-circle me-2"></i> An error occurred while deleting the question set. Please try again.
+                                    </div>
+                                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                                </div>
+                            </div>
+                        `;
+                        document.body.appendChild(toast);
+                        const toastEl = new bootstrap.Toast(toast.querySelector('.toast'));
+                        toastEl.show();
+
+                        deleteButton.disabled = false;
+                        deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete';
+                    } finally {
+                        modal.hide();
+                    }
+                });
+
+                confirmModal.addEventListener('hidden.bs.modal', function () {
+                    document.body.removeChild(confirmModal);
+                });
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An unexpected error occurred. Please try again.');
+            }
+        }
+    </script>
+}

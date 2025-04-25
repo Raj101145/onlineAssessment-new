@@ -1,0 +1,860 @@
+@model OnlineAssessment.Web.Models.Test
+
+@{
+    ViewData["Title"] = "Take Test";
+    var totalQuestions = Model.Questions.Count;
+    var mcqQuestions = Model.Questions.ToList();
+    Layout = "_TestLayout";
+}
+
+@section Styles {
+    <style>
+        :root {
+            --primary-color: #10b981;
+            --primary-hover: #059669;
+            --primary-light: #d1fae5;
+            --background-color: #f9fafb;
+            --card-bg: #ffffff;
+            --border-color: #e5e7eb;
+            --text-primary: #1f2937;
+            --text-secondary: #4b5563;
+            --text-muted: #9ca3af;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-primary);
+        }
+
+        /* Test Header */
+        .test-header {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: white;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-left: 10px;
+        }
+
+        .back-button {
+            color: var(--text-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Main Container */
+        .test-container {
+            display: flex;
+            height: calc(100vh - 120px); /* Account for header and footer */
+        }
+
+        /* Footer positioning */
+        .simple-footer {
+            margin-top: auto;
+        }
+
+        /* Sidebar */
+        .test-sidebar {
+            width: 250px;
+            background-color: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .sidebar-section-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        /* Timer */
+        .timer-container {
+            text-align: center;
+        }
+
+        .timer-display {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .timer-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Question Navigation */
+        .questions-nav {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .question-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .question-button:hover {
+            border-color: var(--primary-color);
+        }
+
+        .question-button.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .question-button.answered {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* Main Content */
+        .test-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+        }
+
+        .question-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .question-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .nav-button {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            background-color: white;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-button:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .nav-button i {
+            margin-right: 8px;
+        }
+
+        .nav-button i.right {
+            margin-right: 0;
+            margin-left: 8px;
+        }
+
+        /* Question */
+        .question-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-number {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 1.125rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        /* Options */
+        .option-container {
+            margin-bottom: 12px;
+        }
+
+        .option-label {
+            display: flex;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-label:hover {
+            border-color: var(--primary-color);
+        }
+
+        .option-label.selected {
+            background-color: var(--primary-light);
+            border-color: var(--primary-color);
+        }
+
+        .option-radio {
+            margin-right: 12px;
+        }
+
+        /* Submit Button */
+        .submit-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .submit-button {
+            padding: 10px 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .submit-button:hover {
+            background-color: var(--primary-hover);
+        }
+    </style>
+}
+
+<div class="test-header">
+    <span class="header-title">@Model.Title</span>
+</div>
+
+<div class="alert alert-warning" role="alert" style="border-left: 5px solid #f59e0b; font-size: 1.1rem;">
+    <strong><i class="fas fa-exclamation-triangle"></i> Important Security Notice:</strong>
+    <ul>
+        <li><strong>Do not switch tabs or use the back button during the test.</strong></li>
+        <li>If you switch tabs more than 3 times, your test will be automatically submitted.</li>
+        <li>Using the back button will result in automatic test submission.</li>
+        <li>Refreshing the page will result in automatic test submission.</li>
+        <li>You cannot submit the test until the timer is completed.</li>
+        <li>When the timer reaches 0, the test will be automatically submitted.</li>
+    </ul>
+</div>
+
+<div id="tab-switch-warning" class="alert alert-danger" role="alert" style="display: none; border-left: 5px solid #ef4444; font-size: 1.1rem;">
+    <strong><i class="fas fa-exclamation-circle"></i> Tab Switching Detected:</strong>
+    <span id="tab-switch-count">You have switched tabs 0/3 times.</span> Your test will be automatically submitted if you switch tabs 3 times.
+</div>
+
+<!-- Ad Unit Before Test -->
+<div class="container mb-4">
+    @await Html.PartialAsync("_AdUnit")
+</div>
+
+<div class="test-container">
+    <div class="test-sidebar">
+        <div class="sidebar-section">
+            <div class="timer-container">
+                <div id="timer" class="timer-display">00:15:30</div>
+                <div class="timer-label">Time Remaining</div>
+            </div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">Questions</div>
+            <div class="questions-nav">
+                @for (int i = 1; i <= totalQuestions; i++)
+                {
+                    <button type="button" class="question-button @(i == 1 ? "active" : "")" data-question-index="@(i-1)">@i</button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="test-content">
+        <form id="testForm">
+            @Html.AntiForgeryToken()
+
+            <div id="questionsContainer" class="question-container">
+                @for (int i = 0; i < mcqQuestions.Count; i++)
+                {
+                    var question = mcqQuestions[i];
+                    <div class="question-content @(i == 0 ? "" : "d-none")" data-question-id="@question.Id" data-question-index="@i">
+                        <div class="question-navigation">
+                            @if (i > 0)
+                            {
+                                <button type="button" class="nav-button prev-question">
+                                    <i class="fas fa-arrow-left"></i> Previous
+                                </button>
+                            }
+                            else
+                            {
+                                <div></div>
+                            }
+
+                            @if (i < mcqQuestions.Count - 1)
+                            {
+                                <button type="button" class="nav-button next-question">
+                                    Next <i class="fas fa-arrow-right right"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="submit-button">
+                                    Submit Answers
+                                </button>
+                            }
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-number">Question @(i + 1)</div>
+                            <div class="question-text">@question.Text</div>
+
+                            <div class="options-container">
+                                @foreach (var option in question.AnswerOptions)
+                                {
+                                    <div class="option-container">
+                                        <label class="option-label" for="option_@option.Id">
+                                            <input class="option-radio" type="radio"
+                                                   name="question_@question.Id"
+                                                   value="@option.Id"
+                                                   id="option_@option.Id">
+                                            @option.Text
+                                        </label>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const testForm = document.getElementById('testForm');
+            const timerElement = document.getElementById('timer');
+            const questionButtons = document.querySelectorAll('.question-button');
+            const questionContents = document.querySelectorAll('.question-content');
+
+            // Make sure we have a valid duration (default to 15 minutes if not set)
+            let durationMinutes = @(Model.DurationMinutes > 0 ? Model.DurationMinutes : 15);
+            let timeLeft = durationMinutes * 60; // Convert minutes to seconds
+
+            // Initialize timer display immediately
+            const hours = Math.floor(timeLeft / 3600);
+            const minutes = Math.floor((timeLeft % 3600) / 60);
+            const seconds = timeLeft % 60;
+            timerElement.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+            // Start the timer interval
+            const timerInterval = setInterval(updateTimer, 1000);
+
+            // Timer function
+            function updateTimer() {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerElement.textContent = '00:00:00';
+                    timerElement.classList.add('text-danger');
+                    // Add a small delay before submitting to ensure the timer shows 00:00:00
+                    setTimeout(() => {
+                        // Set auto-submit flag to true
+                        isAutoSubmitting = true;
+                        // Auto-submit when time expires
+                        submitTest(true);
+                    }, 500);
+                    return;
+                }
+
+                const hours = Math.floor(timeLeft / 3600);
+                const minutes = Math.floor((timeLeft % 3600) / 60);
+                const seconds = timeLeft % 60;
+
+                timerElement.textContent =
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                // Add warning class when less than 5 minutes remaining
+                if (timeLeft <= 300) {
+                    timerElement.classList.add('text-danger');
+                }
+
+                timeLeft--;
+            }
+
+            // Handle question navigation
+            questionButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const questionIndex = parseInt(this.getAttribute('data-question-index'));
+                    showQuestion(questionIndex);
+                });
+            });
+
+            function showQuestion(index) {
+                // Hide all questions
+                questionContents.forEach(content => {
+                    content.classList.add('d-none');
+                });
+
+                // Show selected question
+                questionContents[index].classList.remove('d-none');
+
+                // Update active button
+                questionButtons.forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                questionButtons[index].classList.add('active');
+            }
+
+            // Handle prev/next buttons
+            document.querySelectorAll('.next-question').forEach(button => {
+                button.addEventListener('click', function() {
+                    const currentQuestion = document.querySelector('.question-content:not(.d-none)');
+                    const currentIndex = parseInt(currentQuestion.getAttribute('data-question-index'));
+                    showQuestion(currentIndex + 1);
+                });
+            });
+
+            document.querySelectorAll('.prev-question').forEach(button => {
+                button.addEventListener('click', function() {
+                    const currentQuestion = document.querySelector('.question-content:not(.d-none)');
+                    const currentIndex = parseInt(currentQuestion.getAttribute('data-question-index'));
+                    showQuestion(currentIndex - 1);
+                });
+            });
+
+            // Mark questions as answered when an option is selected
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    const questionContent = this.closest('.question-content');
+                    const questionIndex = parseInt(questionContent.getAttribute('data-question-index'));
+                    questionButtons[questionIndex].classList.add('answered');
+
+                    // Mark label as selected
+                    const labels = questionContent.querySelectorAll('.option-label');
+                    labels.forEach(label => {
+                        label.classList.remove('selected');
+                    });
+                    this.closest('.option-label').classList.add('selected');
+                });
+            });
+
+            // Variables to track tab switching and back button usage
+            let tabSwitchCount = 0;
+            const MAX_TAB_SWITCHES = 3; // Reduced from 10 to 3 as requested
+            let isSubmitting = false;
+            let isAutoSubmitting = false; // Track if test is being auto-submitted
+            let testStartTime = Date.now();
+            let testDuration = @Model.DurationMinutes * 60 * 1000; // Convert minutes to milliseconds
+            let hasRefreshed = false; // Track if the page has been refreshed
+
+            // Disable back button - more aggressive approach
+            window.addEventListener('load', function() {
+                // Push initial state
+                history.pushState({ page: 'test' }, null, location.href);
+
+                // Push state again to ensure we have history to go back to
+                history.pushState({ page: 'test-started' }, null, location.href);
+
+                // Handle back button press
+                window.onpopstate = function (event) {
+                    console.log('Back button detected');
+                    // Push state again to prevent navigation
+                    history.pushState({ page: 'test-back-detected' }, null, location.href);
+                    // Handle security violation
+                    handleSecurityViolation('back button');
+                };
+
+                // Add another listener for the beforeunload event
+                window.addEventListener('beforeunload', function(e) {
+                    // Only show confirmation dialog if not auto-submitting
+                    if (!isAutoSubmitting) {
+                        e.preventDefault();
+                        e.returnValue = '';
+
+                        // Attempt to submit the test before unloading
+                        submitTest(true);
+
+                        // The message won't actually be shown in most modern browsers
+                        return 'Are you sure you want to leave? Your test will be automatically submitted.';
+                    }
+                });
+
+                // Add a hashchange listener as another way to detect navigation attempts
+                window.addEventListener('hashchange', function(e) {
+                    console.log('Hash change detected');
+                    handleSecurityViolation('navigation attempt');
+                    return false;
+                });
+            });
+
+            // Prevent F5/refresh
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F5' || (e.ctrlKey && e.key === 'r')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSecurityViolation('page refresh attempt');
+                    return false;
+                }
+            });
+
+            // Detect page refresh using the performance navigation type
+            if (performance && performance.navigation) {
+                if (performance.navigation.type === 1) { // 1 is TYPE_RELOAD
+                    console.log('Page was refreshed');
+                    hasRefreshed = true;
+                    handleSecurityViolation('page refresh detected');
+                }
+            }
+
+            // Alternative refresh detection for newer browsers
+            if (window.performance && window.performance.getEntriesByType) {
+                const navEntries = window.performance.getEntriesByType('navigation');
+                if (navEntries.length > 0 && navEntries[0].type === 'reload') {
+                    console.log('Page was refreshed (newer API)');
+                    hasRefreshed = true;
+                    handleSecurityViolation('page refresh detected');
+                }
+            }
+
+            // Track tab visibility changes - more reliable approach
+            let lastVisibilityChange = 0;
+            document.addEventListener('visibilitychange', function() {
+                // Prevent counting multiple events fired in quick succession
+                const now = Date.now();
+                if (now - lastVisibilityChange < 1000) return;
+                lastVisibilityChange = now;
+
+                if (document.visibilityState === 'hidden') {
+                    tabSwitchCount++;
+                    console.log(`Tab switch detected. Count: ${tabSwitchCount}`);
+
+                    // Show warning in the console (toast might not be visible if tab is switched)
+                    console.warn(`Warning: Tab switching detected (${tabSwitchCount}/${MAX_TAB_SWITCHES})`);
+
+                    // Update the warning message text
+                    const tabSwitchWarningElement = document.getElementById('tab-switch-count');
+                    if (tabSwitchWarningElement) {
+                        tabSwitchWarningElement.textContent = `You have switched tabs ${tabSwitchCount}/${MAX_TAB_SWITCHES} times.`;
+                    }
+
+                    if (tabSwitchCount >= MAX_TAB_SWITCHES) {
+                        handleSecurityViolation('tab switching limit reached');
+                    }
+                } else if (document.visibilityState === 'visible') {
+                    // When tab becomes visible again, show the warning
+                    if (tabSwitchCount > 0 && tabSwitchCount < MAX_TAB_SWITCHES) {
+                        // Show the warning message
+                        const tabSwitchWarningElement = document.getElementById('tab-switch-warning');
+                        if (tabSwitchWarningElement) {
+                            tabSwitchWarningElement.style.display = 'block';
+                        }
+
+                        // Update the warning message text
+                        const tabSwitchCountElement = document.getElementById('tab-switch-count');
+                        if (tabSwitchCountElement) {
+                            tabSwitchCountElement.textContent = `You have switched tabs ${tabSwitchCount}/${MAX_TAB_SWITCHES} times.`;
+                        }
+
+                        // Also show a toast notification
+                        showToast(`Warning: Tab switching detected (${tabSwitchCount}/${MAX_TAB_SWITCHES}). Your test will be auto-submitted if you switch tabs ${MAX_TAB_SWITCHES - tabSwitchCount} more times.`, 'warning');
+                    }
+
+                    // Check if we need to auto-submit
+                    if (tabSwitchCount >= MAX_TAB_SWITCHES) {
+                        // Auto-submit immediately without warning
+                        handleSecurityViolation('tab switching limit reached');
+                    }
+                }
+            });
+
+            // Function for security notice - removed popup
+            function showSecurityNotice() {
+                // No popup shown - security notice is already displayed in the alert at the top of the page
+                console.log('Security notice is displayed in the page header');
+            }
+
+            // Security notice is already shown in the page header, no need for popup
+            // showSecurityNotice();
+
+            // Function to handle security violations
+            function handleSecurityViolation(violationType) {
+                // Allow multiple submissions for security violations
+                console.log(`Security violation detected: ${violationType}`);
+                console.error(`Security violation: ${violationType}. Auto-submitting test.`);
+
+                // Set auto-submit flag to true
+                isAutoSubmitting = true;
+
+                // Force isSubmitting to false to ensure the submission goes through
+                isSubmitting = false;
+
+                // Use the submitTest function with security violation flag
+                submitTest(true);
+
+                // Set multiple fallback redirects with different timeouts
+                setTimeout(() => {
+                    console.log('First security violation fallback timeout reached (5s), trying submission again');
+                    submitTest(true); // Try submitting again after 5 seconds
+                }, 5000);
+
+                setTimeout(() => {
+                    console.log('Second security violation fallback timeout reached (10s), redirecting to results');
+                    // Try to get the result ID from localStorage if available
+                    const resultId = localStorage.getItem('lastTestResultId');
+                    if (resultId) {
+                        window.location.href = `/Test/Result/${resultId}`;
+                    } else {
+                        window.location.href = '/Test/History';
+                    }
+                }, 10000);
+
+                // Final fallback - force redirect after 15 seconds no matter what
+                setTimeout(() => {
+                    console.log('Final security violation fallback timeout reached (15s), force redirecting');
+                    // Try to get the result ID from localStorage if available
+                    const resultId = localStorage.getItem('lastTestResultId');
+                    if (resultId) {
+                        window.location.replace(`/Test/Result/${resultId}`); // Use replace to prevent back button
+                    } else {
+                        window.location.replace('/Test/History'); // Use replace to prevent back button
+                    }
+                }, 15000);
+            }
+
+            // Handle form submission
+            testForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Check if the timer has completed
+                if (timeLeft > 0) {
+                    showToast('You cannot submit the test until the timer is completed.', 'warning');
+                    return;
+                }
+
+                // Submit directly without confirmation
+                submitTest(false);
+            });
+
+            function submitTest(isSecurityViolation = false) {
+                // For security violations or auto-submission, always allow submission regardless of isSubmitting state
+                if (isSubmitting && !isSecurityViolation && !isAutoSubmitting) {
+                    console.log('Already submitting, ignoring duplicate submission request');
+                    return; // Prevent multiple submissions unless it's a security violation or auto-submission
+                }
+
+                // Set the submitting flag
+                isSubmitting = true;
+
+                console.log(`Submitting test (security violation: ${isSecurityViolation}, auto-submission: ${isAutoSubmitting})`);
+
+                // Set a timeout to redirect to results page if submission takes too long
+                const submissionTimeout = setTimeout(() => {
+                    console.log('Submission timeout reached, redirecting to results');
+                    // Try to get the result ID from localStorage if available
+                    const resultId = localStorage.getItem('lastTestResultId');
+                    if (resultId) {
+                        window.location.href = `/Test/Result/${resultId}`;
+                    } else {
+                        window.location.href = '/Test/History';
+                    }
+                }, 10000); // 10 seconds timeout
+
+                // Collect all answers
+                const answers = {};
+
+                // Collect MCQ answers
+                const mcqInputs = document.querySelectorAll('input[name^="question_"]');
+                mcqInputs.forEach(input => {
+                    if (input.checked) {
+                        answers[input.name] = input.value;
+                    }
+                });
+
+                console.log(`Collected ${Object.keys(answers).length} answers`);
+
+                // Get the anti-forgery token
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                if (!token) {
+                    console.error('Security token not found');
+                    // If security violation, redirect to history page
+                    if (isSecurityViolation) {
+                        console.warn('Security token not found during security violation, redirecting to history');
+                        setTimeout(() => {
+                            window.location.replace('/Test/History'); // Use replace to prevent back button
+                        }, 2000);
+                    } else {
+                        isSubmitting = false; // Reset flag if not a security violation
+                    }
+                    return;
+                }
+
+                console.log('Sending submission request to server...');
+
+                // Add security violation and auto-submission flags to the request
+                const requestData = {
+                    ...answers,
+                    isSecurityViolation: isSecurityViolation,
+                    isAutoSubmitting: isAutoSubmitting
+                };
+
+                // Submit the test directly without confirmation
+                fetch(`/Test/Submit/${@Model.Id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                .then(response => {
+                    console.log(`Server response status: ${response.status}`);
+                    if (!response.ok) {
+                        if (isSecurityViolation) {
+                            // For security violations, don't try to parse the response
+                            // Just throw a generic error
+                            throw new Error('Error submitting test during security violation');
+                        }
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Error submitting test');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    clearTimeout(submissionTimeout); // Clear the timeout
+                    console.log('Submission successful, redirecting...');
+
+                    if (data.success) {
+                        // Store the result ID in localStorage for fallback redirects
+                        if (data.redirectUrl) {
+                            // Extract the result ID from the redirect URL
+                            const resultIdMatch = data.redirectUrl.match(/\/Test\/Result\/(\d+)/);
+                            if (resultIdMatch && resultIdMatch[1]) {
+                                const resultId = resultIdMatch[1];
+                                localStorage.setItem('lastTestResultId', resultId);
+                                console.log(`Stored result ID ${resultId} in localStorage`);
+                            }
+
+                            if (isSecurityViolation || isAutoSubmitting) {
+                                window.location.replace(data.redirectUrl); // Use replace to prevent back button
+                            } else {
+                                window.location.href = data.redirectUrl;
+                            }
+                        } else {
+                            if (isSecurityViolation || isAutoSubmitting) {
+                                window.location.replace('/Test/History'); // Use replace to prevent back button
+                            } else {
+                                window.location.href = '/Test/History';
+                            }
+                        }
+                    } else {
+                        console.error('Submission reported failure:', data.message);
+                        // If security violation or auto-submission, redirect anyway
+                        if (isSecurityViolation || isAutoSubmitting) {
+                            setTimeout(() => {
+                                // Try to get the result ID from localStorage if available
+                                const resultId = localStorage.getItem('lastTestResultId');
+                                if (resultId) {
+                                    window.location.replace(`/Test/Result/${resultId}`); // Use replace to prevent back button
+                                } else {
+                                    window.location.replace('/Test/History'); // Use replace to prevent back button
+                                }
+                            }, 2000);
+                        } else {
+                            isSubmitting = false; // Reset submission flag if there was an error
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error submitting test:', error);
+
+                    // If security violation or auto-submission, redirect anyway
+                    if (isSecurityViolation || isAutoSubmitting) {
+                        setTimeout(() => {
+                            // Try to get the result ID from localStorage if available
+                            const resultId = localStorage.getItem('lastTestResultId');
+                            if (resultId) {
+                                window.location.replace(`/Test/Result/${resultId}`); // Use replace to prevent back button
+                            } else {
+                                window.location.replace('/Test/History'); // Use replace to prevent back button
+                            }
+                        }, 2000);
+                    } else {
+                        isSubmitting = false; // Reset submission flag if there was an error
+                    }
+                });
+            }
+
+            // Helper functions for toast notifications
+            function showToast(message, type = 'info') {
+                const toast = document.createElement('div');
+                toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : type === 'warning' ? 'warning' : 'info'} position-fixed end-0 m-3`;
+                toast.style.top = '70px'; // Position below navbar
+                toast.style.zIndex = '9999'; // Ensure it's on top
+                toast.setAttribute('role', 'alert');
+                toast.setAttribute('aria-live', 'assertive');
+                toast.setAttribute('aria-atomic', 'true');
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+
+                // Manually show the toast if bootstrap is not available
+                try {
+                    const bsToast = new bootstrap.Toast(toast, { delay: 5000 });
+                    bsToast.show();
+
+                    toast.addEventListener('hidden.bs.toast', function() {
+                        document.body.removeChild(toast);
+                    });
+                } catch (e) {
+                    console.warn('Bootstrap Toast not available, using fallback');
+                    // Fallback if bootstrap is not available
+                    toast.style.display = 'block';
+                    setTimeout(() => {
+                        if (document.body.contains(toast)) {
+                            document.body.removeChild(toast);
+                        }
+                    }, 5000);
+                }
+            }
+        });
+    </script>
+}

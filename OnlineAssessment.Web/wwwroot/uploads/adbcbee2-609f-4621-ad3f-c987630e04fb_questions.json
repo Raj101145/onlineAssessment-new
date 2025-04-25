@@ -1,0 +1,36 @@
+{
+  "codingQuestions": [
+    {
+      "text": "Reverse Array",
+      "type": 1,
+      "testId": 25,
+      "description": "An array is a data structure that stores elements of the same type in a contiguous block of memory. In an array, A, of size N, each memory location has some unique index, i (where 0 ≤ i < N), that can be referenced as A[i] or Ai.\n\nYour task is to reverse an array of integers.",
+      "functionName": "reverseArray",
+      "parameters": [
+        {
+          "name": "a",
+          "type": "List",
+          "description": "the array to reverse"
+        }
+      ],
+      "returnType": "List",
+      "returnDescription": "the reversed array",
+      "constraints": [
+        "1 ≤ N ≤ 10^3",
+        "1 ≤ A[i] ≤ 10^4, where A[i] is the i-th integer in A"
+      ],
+      "testCases": [
+        {
+          "input": "[1, 2, 3]",
+          "expectedOutput": "[3, 2, 1]",
+          "explanation": "The array is reversed"
+        }
+      ],
+      "starterCode": {
+        "java": "public static List reverseArray(List a) {\n    // Write your code here\n}",
+        "python": "def reverse_array(a):\n    # Write your code here\n    pass",
+        "javascript": "function reverseArray(a) {\n    // Write your code here\n}"
+      }
+    }
+  ]
+}

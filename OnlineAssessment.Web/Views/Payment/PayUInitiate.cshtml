@@ -1,0 +1,25 @@
+@model OnlineAssessment.Web.Models.PayURequestModel
+@{
+    var payuUrl = Model.PayUUrl;
+}
+<html>
+<head>
+    <title>Redirecting to PayU...</title>
+</head>
+<body>
+    <form id="payuForm" method="post" action="@payuUrl">
+        @foreach (var item in Model.Parameters)
+        {
+            if (item.Key != "payuUrl")
+            {
+                <input type="hidden" name="@item.Key" value="@item.Value" />
+            }
+        }
+        <noscript>
+            <p>JavaScript is required. Click the button below to proceed to payment.</p>
+            <button type="submit">Pay Now</button>
+        </noscript>
+    </form>
+    <script>document.getElementById('payuForm').submit();</script>
+</body>
+</html>

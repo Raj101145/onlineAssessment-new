@@ -1,0 +1,470 @@
+@model OnlineAssessment.Web.Models.Test
+@{
+    ViewData["Title"] = "Your Scheduled Test";
+}
+
+<style>
+    .scheduled-test-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .test-header {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem 1rem 0 0;
+        margin-bottom: 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-header h2 {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .test-header p {
+        margin-bottom: 0;
+        opacity: 0.9;
+    }
+
+    .test-body {
+        background: white;
+        padding: 2rem;
+        border-radius: 0 0 1rem 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .test-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .test-info {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .schedule-info {
+        flex: 1;
+        min-width: 300px;
+        border-left: 1px solid #e5e7eb;
+        padding-left: 2rem;
+    }
+
+    .info-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-title i {
+        color: #22c55e;
+    }
+
+    .info-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-list li {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .info-list li i {
+        color: #3b82f6;
+        margin-top: 0.25rem;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #4b5563;
+        min-width: 120px;
+    }
+
+    .info-value {
+        color: #1f2937;
+    }
+
+    .action-buttons {
+        margin-top: 2rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn-start {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 1.125rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-start:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+        color: white;
+    }
+
+    .btn-back {
+        background: #f3f4f6;
+        color: #4b5563;
+        border: 1px solid #e5e7eb;
+        padding: 1rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        font-size: 1.125rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-back:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+    }
+
+    .alert-success {
+        background-color: #ecfdf5;
+        border-left: 4px solid #10b981;
+        color: #065f46;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .countdown-container {
+        background: #f9fafb;
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .countdown-title {
+        font-size: 1rem;
+        color: #4b5563;
+        margin-bottom: 0.5rem;
+    }
+
+    .countdown {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .countdown-item {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        min-width: 80px;
+    }
+
+    .countdown-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .countdown-label {
+        font-size: 0.75rem;
+        color: #6b7280;
+        text-transform: uppercase;
+    }
+
+    @@media (max-width: 768px) {
+        .test-details {
+            flex-direction: column;
+        }
+
+        .schedule-info {
+            border-left: none;
+            padding-left: 0;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 2rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="scheduled-test-container">
+    @if (ViewBag.SuccessMessage != null)
+    {
+        <div class="alert alert-success mb-4">
+            <i class="fas fa-check-circle me-2"></i> @ViewBag.SuccessMessage
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger mb-4">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="test-header">
+        <h2><i class="fas fa-calendar-check me-2"></i> Your Scheduled Test</h2>
+        <p>You have successfully booked and paid for this test. You can start the test during your scheduled time slot.</p>
+    </div>
+
+    <div class="test-body">
+        <div class="test-details">
+            <div class="test-info">
+                <h3 class="info-title"><i class="fas fa-clipboard-list"></i> Test Details</h3>
+                <ul class="info-list">
+                    <li>
+                        <i class="fas fa-file-alt"></i>
+                        <div>
+                            <div class="info-label">Test Name</div>
+                            <div class="info-value">@Model.Title</div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-align-left"></i>
+                        <div>
+                            <div class="info-label">Description</div>
+                            <div class="info-value">@Model.Description</div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <div class="info-label">Duration</div>
+                            <div class="info-value">@Model.DurationMinutes minutes</div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-tag"></i>
+                        <div>
+                            <div class="info-label">Domain</div>
+                            <div class="info-value">@Model.Domain</div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-redo"></i>
+                        <div>
+                            <div class="info-label">Max Attempts</div>
+                            <div class="info-value">@Model.MaxAttempts</div>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="schedule-info">
+                <h3 class="info-title"><i class="fas fa-calendar-alt"></i> Schedule Information</h3>
+                <ul class="info-list">
+                    <li>
+                        <i class="fas fa-calendar-day"></i>
+                        <div>
+                            <div class="info-label">Date</div>
+                            <div class="info-value">@ViewBag.BookedDate</div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-clock"></i>
+                        <div>
+                            <div class="info-label">Time Slot</div>
+                            <div class="info-value">@(ViewBag.SlotDisplayTime ?? $"{ViewBag.BookedStartTime} - {ViewBag.BookedEndTime}")</div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-hashtag"></i>
+                        <div>
+                            <div class="info-label">Slot Number</div>
+                            <div class="info-value">Slot @ViewBag.BookedSlotNumber</div>
+                        </div>
+                    </li>
+
+                    <li>
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <div class="info-label">Status</div>
+                            <div class="info-value">
+                                @if ((ViewBag.IsTestTime as bool?) == true)
+                                {
+                                    <span class="badge bg-success">Available Now</span>
+                                }
+                                else if ((ViewBag.IsFutureTest as bool?) == true)
+                                {
+                                    <span class="badge bg-warning">Upcoming</span>
+                                }
+                                else if ((ViewBag.IsExpired as bool?) == true)
+                                {
+                                    <span class="badge bg-danger">Expired</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Unknown Status</span>
+                                }
+                            </div>
+                        </div>
+                    </li>
+                    <li>
+                        <i class="fas fa-id-card"></i>
+                        <div>
+                            <div class="info-label">SAP ID</div>
+                            <div class="info-value">@ViewBag.UserSapId</div>
+                        </div>
+                    </li>
+                </ul>
+
+                @if ((ViewBag.IsFutureTest as bool?) == true)
+                {
+                    <div class="countdown-container">
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i> This test is scheduled for a future time. You must wait until the scheduled time to start the test.
+                        </div>
+                        <p class="mb-2">@ViewBag.TimeRemainingMessage</p>
+                        <div class="countdown-title">Time until test becomes available:</div>
+                        <div class="countdown" id="countdown">
+                            <div class="countdown-item">
+                                <div class="countdown-value" id="countdown-days">@ViewBag.DaysRemaining</div>
+                                <div class="countdown-label">Days</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value" id="countdown-hours">@ViewBag.HoursRemaining</div>
+                                <div class="countdown-label">Hours</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value" id="countdown-minutes">@ViewBag.MinutesRemaining</div>
+                                <div class="countdown-label">Minutes</div>
+                            </div>
+                            <div class="countdown-item">
+                                <div class="countdown-value" id="countdown-seconds">@ViewBag.SecondsRemaining</div>
+                                <div class="countdown-label">Seconds</div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <strong>Note:</strong> You will only be able to start the test during your booked time slot (Slot @ViewBag.BookedSlotNumber: @ViewBag.SlotDisplayTime).
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            @if ((ViewBag.IsTestTime as bool?) == true)
+            {
+                <a href="@Url.Action("Take", "Test", new { id = Model.Id, retake = (ViewBag.IsRetake as bool?) == true ? "true" : "false" })" class="btn-start">
+                    <i class="fas fa-play-circle"></i> @((ViewBag.IsRetake as bool?) == true ? "Start Retake Test Now" : "Start Test Now")
+                </a>
+            }
+            else if ((ViewBag.IsFutureTest as bool?) == true)
+            {
+                <a href="javascript:void(0)" class="btn-start" id="startTestButton" style="background-color: #6c757d; opacity: 0.7; cursor: not-allowed; pointer-events: none;">
+                    <i class="fas fa-clock"></i> <span id="buttonText">Test Not Available Yet</span>
+                </a>
+                <div class="mt-2 text-center text-danger">
+                    <small><strong>Important:</strong> You cannot start this test before the scheduled time. Please refresh the page when your scheduled time arrives.</small>
+                </div>
+                <div class="mt-2 text-center">
+                    <small>Your test is scheduled for <strong>@ViewBag.SlotDisplayTime</strong>. The button will be enabled during this time slot.</small>
+                </div>
+            }
+            else if (ViewBag.IsExpired)
+            {
+                <a href="javascript:void(0)" class="btn-start" style="background: #dc3545; opacity: 0.7; cursor: not-allowed; pointer-events: none;">
+                    <i class="fas fa-times-circle"></i> Test Period Has Ended
+                </a>
+            }
+            else
+            {
+                <a href="javascript:void(0)" class="btn-start" style="background-color: #6c757d; opacity: 0.7; cursor: not-allowed; pointer-events: none;">
+                    <i class="fas fa-question-circle"></i> Test Status Unknown
+                </a>
+            }
+            <a href="@Url.Action("Index", "Test")" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Back to TestPage
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if (ViewBag.IsFutureTest)
+            {
+                @:var targetDate = new Date('@ViewBag.TargetDateString');
+
+                @:function updateCountdown() {
+                @:    var now = new Date();
+                @:    var diff = targetDate - now;
+
+                @:    if (diff <= 0) {
+                @:        document.getElementById('countdown-days').textContent = '0';
+                @:        document.getElementById('countdown-hours').textContent = '0';
+                @:        document.getElementById('countdown-minutes').textContent = '0';
+                @:        document.getElementById('countdown-seconds').textContent = '0';
+
+                @:        // Update the button text but keep it disabled
+                @:        var startButton = document.getElementById('startTestButton');
+                @:        var buttonText = document.getElementById('buttonText');
+                @:        if (startButton && buttonText) {
+                @:            buttonText.textContent = 'Time to Start Test';
+                @:            startButton.style.backgroundColor = '#3b82f6';
+                @:            startButton.style.opacity = '0.8';
+                @:            // Keep the button disabled to enforce server-side validation
+                @:        }
+
+                @:        // Show a notification to refresh the page
+                @:        var notification = document.createElement('div');
+                @:        notification.className = 'alert alert-success mt-3';
+                @:        notification.innerHTML = '<i class="fas fa-check-circle me-2"></i> <strong>Test time has arrived!</strong> The page will refresh automatically in 5 seconds, or you can <a href="javascript:location.reload()" class="alert-link">refresh now</a>.';
+                @:
+                @:        // Only add the notification if it doesn't already exist
+                @:        if (!document.querySelector('.countdown-container .alert-success')) {
+                @:            document.querySelector('.countdown-container').appendChild(notification);
+                @:
+                @:            // Set a timer to automatically refresh the page after 5 seconds
+                @:            setTimeout(function() {
+                @:                location.reload();
+                @:            }, 5000);
+                @:        }
+                @:
+                @:        // Don't automatically enable the button - require a page refresh
+                @:        // This ensures the server-side validation is performed
+                @:        return;
+                @:    }
+
+                @:    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                @:    var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                @:    var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                @:    var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                @:    document.getElementById('countdown-days').textContent = days;
+                @:    document.getElementById('countdown-hours').textContent = hours.toString().padStart(2, '0');
+                @:    document.getElementById('countdown-minutes').textContent = minutes.toString().padStart(2, '0');
+                @:    document.getElementById('countdown-seconds').textContent = seconds.toString().padStart(2, '0');
+                @:}
+
+                @:updateCountdown();
+                @:setInterval(updateCountdown, 1000);
+            }
+        });
+    </script>
+}

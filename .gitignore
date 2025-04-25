@@ -1,0 +1,22 @@
+# Ignore uploads folder contents but keep the folder structure
+/uploads/*
+!/uploads/.gitkeep
+
+# If your uploads folder is nested, use this pattern instead
+# /OnlineAssessment.Web/uploads/*
+# !/OnlineAssessment.Web/uploads/.gitkeep
+
+
+# Build results
+[Bb]in/
+[Oo]bj/
+
+# User-specific files
+*.user
+*.suo
+.vs/
+.vscode/
+
+# NuGet packages
+**/packages/*
+*.nupkg

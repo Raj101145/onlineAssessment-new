@@ -1,0 +1,337 @@
+@model OnlineAssessment.Web.Models.TestResult
+
+@{
+    ViewData["Title"] = "Test Result";
+}
+
+<div class="result-container">
+    <div class="result-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-4 mb-3">Test Result</h1>
+                    <p class="lead text-muted">@Model.Test.Title</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="action-buttons">
+                        <button onclick="exportResult()" class="btn btn-outline-light me-2">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <a href="/Test/History" class="btn btn-outline-light">
+                            <i class="fas fa-history"></i> History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mt-5">
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-info-circle me-2"></i> @ViewBag.Message
+            </div>
+        }
+
+        @if (TempData["TestRecreated"] != null)
+        {
+            <div class="alert alert-success mb-4">
+                <i class="fas fa-check-circle me-2"></i> Your test is recreated. <a href="@Url.Action("MyBookings", "Test")" class="alert-link">Go to My Bookings</a> to take the test.
+            </div>
+        }
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="result-card">
+                    <div class="result-summary">
+                        <div class="score-display">
+                            <div class="score-circle @(Model.Score >= (Model.TotalQuestions * 0.7) ? "score-pass" : "score-fail")">
+                                <div class="score-content">
+                                    <h2 class="display-2 mb-0">@Model.Score.ToString("0")</h2>
+                                    <small>out of @Model.TotalQuestions</small>
+                                </div>
+                            </div>
+                            <div class="score-status">
+                                <span class="badge @(Model.Score >= (Model.TotalQuestions * 0.7) ? "bg-success" : "bg-danger")">
+                                    @(Model.Score >= (Model.TotalQuestions * 0.7) ? "PASSED" : "FAILED")
+                                </span>
+                            </div>
+                        </div>
+                        <div class="result-details">
+                            <div class="detail-item">
+                                <i class="fas fa-user"></i>
+                                <div>
+                                    <span class="label">Candidate</span>
+                                    <span class="value">@Model.Username</span>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-calendar"></i>
+                                <div>
+                                    <span class="label">Submitted</span>
+                                    <span class="value">@Model.SubmittedAt.ToString("MMM dd, yyyy HH:mm")</span>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-question-circle"></i>
+                                <div>
+                                    <span class="label">Questions</span>
+                                    <span class="value">@Model.TotalQuestions</span>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-check-circle"></i>
+                                <div>
+                                    <span class="label">Correct</span>
+                                    <span class="value">@Model.CorrectAnswers</span>
+                                </div>
+                            </div>
+                            @if (Model.StartTime.HasValue && Model.EndTime.HasValue)
+                            {
+                                <div class="detail-item">
+                                    <i class="fas fa-clock"></i>
+                                    <div>
+                                        <span class="label">Test Time</span>
+                                        <span class="value">@Model.StartTime.Value.ToString("hh:mm tt") - @Model.EndTime.Value.ToString("hh:mm tt")</span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="result-actions">
+                    <div class="action-card">
+                        <h4>Next Steps</h4>
+                        <div class="action-buttons">
+                            <a href="/Test/Index" class="btn btn-primary btn-lg w-100 mb-3">
+                                <i class="fas fa-list me-2"></i>Back to Tests
+                            </a>
+                            <a href="/Test/MyBookings" class="btn btn-outline-primary btn-lg w-100 mb-3">
+                                <i class="fas fa-calendar-check me-2"></i>My Bookings
+                            </a>
+
+                            @{
+                                // Get the count of attempts for this test
+                                var attemptCount = ViewBag.AttemptCount ?? 1;
+                            }
+                            <a href="@Url.Action("ReAttempt", "Test", new { id = Model.TestId })" class="btn btn-warning btn-lg w-100 mb-3">
+                                <i class="fas fa-redo me-2"></i>Retake Test
+                            </a>
+                            <div class="alert alert-info" role="alert">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <small>You've completed <strong>@attemptCount</strong> attempt@(attemptCount != 1 ? "s" : "") of this test. Retaking the test requires payment and will create a new booking.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .simple-footer {
+        margin-top: auto;
+    }
+
+    .result-container {
+        min-height: calc(100vh - 60px); /* Account for footer */
+        background-color: #f8f9fa;
+    }
+
+    .result-header {
+        background: linear-gradient(135deg, #3498db, #2c3e50);
+        color: white;
+        padding: 3rem 0;
+        margin-bottom: 2rem;
+    }
+
+    .result-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .result-summary {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .score-display {
+        margin-bottom: 2rem;
+    }
+
+    .score-circle {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        border: 10px solid;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .score-pass {
+        border-color: #28a745;
+        color: #28a745;
+    }
+
+    .score-fail {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .score-content {
+        text-align: center;
+    }
+
+    .score-content small {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+
+    .result-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        width: 100%;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+        transition: transform 0.2s;
+    }
+
+    .detail-item:hover {
+        transform: translateY(-3px);
+    }
+
+    .detail-item i {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        color: #3498db;
+    }
+
+    .detail-item .label {
+        display: block;
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+
+    .detail-item .value {
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .result-actions {
+        position: sticky;
+        top: 2rem;
+    }
+
+    .action-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        padding: 2rem;
+    }
+
+    .action-card h4 {
+        margin-bottom: 1.5rem;
+        color: #2c3e50;
+    }
+
+    .badge {
+        font-size: 1.1rem;
+        padding: 0.5rem 1.5rem;
+        border-radius: 30px;
+    }
+
+    .btn {
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-outline-light {
+        border: 2px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .btn-outline-light:hover {
+        background: white;
+        color: #3498db;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        // Clear any session state when the page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Clear localStorage items that might be causing issues
+            if (localStorage.getItem('testInProgress')) {
+                localStorage.removeItem('testInProgress');
+            }
+
+            // Add event listener to the "Back to Tests" button
+            document.querySelector('a[href="/Test/Index"]').addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Clear any localStorage items that might be causing issues
+                if (localStorage.getItem('testInProgress')) {
+                    localStorage.removeItem('testInProgress');
+                }
+
+                // Navigate to the Tests page with a clear parameter to ensure fresh state
+                window.location.href = '/Test/Index?clear=true';
+            });
+        });
+
+        function exportResult() {
+            const resultData = {
+                testTitle: '@Model.Test.Title',
+                username: '@Model.Username',
+                submittedAt: '@OnlineAssessment.Web.Utilities.TimeZoneHelper.ToIst(Model.SubmittedAt).ToString("g")',
+                totalQuestions: @Model.TotalQuestions,
+                correctAnswers: @Model.CorrectAnswers,
+                score: @Model.Score
+            };
+
+            const jsonString = JSON.stringify(resultData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `test_result_${resultData.testTitle.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+    </script>
+}

@@ -1,0 +1,876 @@
+@{
+    ViewData["Title"] = "My Bookings";
+}
+
+<style>
+    .booking-card {
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+        background-color: white;
+    }
+
+    .booking-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .booking-header {
+        padding: 1.25rem;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .booking-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #2c3e50;
+    }
+
+    .booking-body {
+        padding: 1.25rem;
+    }
+
+    .booking-info {
+        display: flex;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+    }
+
+    .booking-info-item {
+        flex: 1;
+        min-width: 200px;
+        margin-bottom: 1rem;
+    }
+
+    .booking-info-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+
+    .booking-info-value {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .booking-actions {
+        margin-top: 1rem;
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-title i {
+        color: #3498db;
+    }
+
+    .no-bookings {
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .no-bookings i {
+        font-size: 3rem;
+        color: #dee2e6;
+        margin-bottom: 1rem;
+    }
+
+    .no-bookings h4 {
+        font-size: 1.25rem;
+        color: #6c757d;
+        margin-bottom: 0.5rem;
+    }
+
+    .no-bookings p {
+        color: #adb5bd;
+        margin-bottom: 1.5rem;
+    }
+
+    .badge-slot {
+        background-color: #e9ecef;
+        color: #495057;
+        font-weight: 500;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+    }
+
+    .badge-available {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .badge-upcoming {
+        background-color: #cff4fc;
+        color: #055160;
+    }
+
+    .badge-expired {
+        background-color: #f8d7da;
+        color: #842029;
+    }
+
+    .badge-taken {
+        background-color: #e2e3e5;
+        color: #41464b;
+    }
+
+    .btn-start-test {
+        background: linear-gradient(135deg, #4e73df, #224abe);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-start-test:hover {
+        background: linear-gradient(135deg, #3a5ccc, #1a3ba0);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-view-details {
+        background-color: #f8f9fa;
+        color: #6c757d;
+        border: 1px solid #dee2e6;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-view-details:hover {
+        background-color: #e9ecef;
+        color: #495057;
+    }
+
+    .btn-reattempt {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        margin-left: 0.5rem;
+    }
+
+    .btn-reattempt:hover {
+        background: linear-gradient(135deg, #d97706, #b45309);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .countdown {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .countdown-item {
+        background-color: #f8f9fa;
+        border-radius: 6px;
+        padding: 0.25rem 0.5rem;
+        min-width: 40px;
+        text-align: center;
+    }
+
+    .countdown-value {
+        font-weight: 600;
+        color: #2c3e50;
+        font-size: 1rem;
+    }
+
+    .countdown-label {
+        font-size: 0.7rem;
+        color: #6c757d;
+    }
+
+    .booking-section {
+        margin-bottom: 3rem;
+    }
+
+    .booking-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+    .status-available {
+        background-color: #10b981;
+    }
+
+    .status-upcoming {
+        background-color: #3b82f6;
+    }
+
+    .status-expired {
+        background-color: #ef4444;
+    }
+
+    .status-taken {
+        background-color: #6b7280;
+    }
+</style>
+
+<div class="container py-5">
+    <!-- Ad Unit at Top of My Bookings Page -->
+    <div class="row mb-4">
+        <div class="col-12">
+            @await Html.PartialAsync("_AdUnit")
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="mb-4">My Bookings</h1>
+                <p class="text-muted">View and manage your scheduled tests.</p>
+            </div>
+            <div>
+                <a href="@Url.Action("MyBookings", "Test", new { refresh = true })" class="btn btn-outline-primary mt-2 me-2">
+                    <i class="fas fa-sync-alt me-2"></i> Refresh
+                </a>
+                <a href="@Url.Action("DebugBookings", "Test")" class="btn btn-outline-secondary mt-2">
+                    <i class="fas fa-bug me-2"></i> Debug View
+                </a>
+            </div>
+        </div>
+
+        <div class="col-12">
+            @if (ViewBag.SuccessMessage != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> @ViewBag.SuccessMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (TempData["TestRecreated"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> Your test is recreated. Please find your test in the "Available Now" section below.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (ViewBag.ErrorMessage != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> @ViewBag.ErrorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Ad Unit in Middle of My Bookings Page -->
+    <div class="row mb-4">
+        <div class="col-12">
+            @await Html.PartialAsync("_AdUnit")
+        </div>
+    </div>
+
+    <!-- Current Bookings Section -->
+    <div class="booking-section">
+        <h2 class="section-title">
+            <i class="fas fa-play-circle"></i> Available Now
+        </h2>
+
+        @if (ViewBag.CurrentBookings != null && ViewBag.CurrentBookings.Count > 0)
+        {
+            <div class="row">
+                @foreach (var booking in ViewBag.CurrentBookings)
+                {
+                    // Hide this booking if there is an upcoming booking for the same test
+                    bool hasUpcomingBookingForAvailableNow = false;
+                    if (ViewBag.UpcomingBookings != null)
+                    {
+                        foreach (var upcoming in ViewBag.UpcomingBookings)
+                        {
+                            if (upcoming.TestId == booking.TestId)
+                            {
+                                hasUpcomingBookingForAvailableNow = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (hasUpcomingBookingForAvailableNow) { continue; }
+                    bool alreadyTaken = false;
+                    if (ViewBag.TestResults != null)
+                    {
+                        foreach (var result in ViewBag.TestResults)
+                        {
+                            if (result.TestId == booking.TestId)
+                            {
+                                alreadyTaken = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="booking-card">
+                            <div class="booking-header">
+                                <div class="booking-title">@booking.Test.Title</div>
+                                <div class="booking-status">
+                                    @{
+                                        // Use the CanStartTest property set by the controller
+                                        bool isWithinTimeSlot = booking.CanStartTest;
+                                    }
+
+                                    @if (alreadyTaken && !isWithinTimeSlot)
+                                    {
+                                        <div class="status-indicator status-taken"></div>
+                                        <span class="badge badge-taken">Already Taken</span>
+                                    }
+                                    else if (isWithinTimeSlot)
+                                    {
+                                        <div class="status-indicator status-available"></div>
+                                        <span class="badge badge-available">Available Now</span>
+                                    }
+                                    else
+                                    {
+                                        <div class="status-indicator status-upcoming"></div>
+                                        <span class="badge badge-upcoming">Scheduled</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="booking-body">
+                                <div class="booking-info">
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Date</div>
+                                        <div class="booking-info-value">@booking.BookingDate.ToString("MMM dd, yyyy")</div>
+                                    </div>
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Time Slot</div>
+                                        <div class="booking-info-value">
+                                            @{
+                                                string slotTimeDisplay = "";
+                                                switch (booking.SlotNumber)
+                                                {
+                                                    case 1:
+                                                        slotTimeDisplay = "9:00 AM - 11:00 AM";
+                                                        break;
+                                                    case 2:
+                                                        slotTimeDisplay = "12:00 PM - 2:00 PM";
+                                                        break;
+                                                    case 3:
+                                                        slotTimeDisplay = "3:00 PM - 5:00 PM";
+                                                        break;
+                                                    case 4:
+                                                        slotTimeDisplay = "6:00 PM - 8:00 PM";
+                                                        break;
+                                                    default:
+                                                        slotTimeDisplay = $"{booking.StartTime.ToString("hh:mm tt")} - {booking.EndTime.ToString("hh:mm tt")}";
+                                                        break;
+                                                }
+                                            }
+                                            @slotTimeDisplay
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="booking-info">
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Booked On</div>
+                                        <div class="booking-info-value">@booking.BookedAt.ToString("MMM dd, yyyy")</div>
+                                    </div>
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Duration</div>
+                                        <div class="booking-info-value">@booking.Test.DurationMinutes minutes</div>
+                                    </div>
+                                </div>
+                                <div class="booking-actions">
+                                    @{
+                                        // Get the test results for this test
+                                        var username = User.Identity?.Name;
+                                        var testResultsForTest = 0;
+                                        var latestResultId = 0;
+                                        if (ViewBag.TestResults != null)
+                                        {
+                                            foreach (var tr in ViewBag.TestResults)
+                                            {
+                                                if (tr.TestId == booking.TestId && tr.Username == username)
+                                                {
+                                                    testResultsForTest++;
+                                                    latestResultId = tr.Id; // Store the latest result ID
+                                                }
+                                            }
+                                        }
+                                        // Get the slot time display for the message
+                                        string bookingTimeDisplay = $"{booking.StartTime.ToString("hh:mm tt")} - {booking.EndTime.ToString("hh:mm tt")}";
+                                    }
+
+                                    @if (alreadyTaken)
+                                    {
+                                        <a href="@Url.Action("Result", "Test", new { id = latestResultId })" class="btn btn-view-details">
+                                            <i class="fas fa-eye"></i> View Results
+                                        </a>
+                                    }
+
+                                    @if (booking.CanStartTest)
+{
+    // Check if user has an upcoming booking for this test
+    bool hasUpcomingBookingForButton = false;
+    if (ViewBag.UpcomingBookings != null)
+    {
+        foreach (var upcoming in ViewBag.UpcomingBookings)
+        {
+            if (upcoming.TestId == booking.TestId)
+            {
+                hasUpcomingBookingForButton = true;
+                break;
+            }
+        }
+    }
+
+    // Check for payment failure using only ViewBag.ErrorMessage
+    bool paymentFailed = false;
+    if (ViewBag.ErrorMessage != null && ViewBag.ErrorMessage.ToString().ToLower().Contains("payment"))
+    {
+        paymentFailed = true;
+    }
+
+    if (paymentFailed)
+    {
+        <a href="@Url.Action("Index", "Payment", new { testId = booking.TestId })" class="btn btn-start-test">
+            <i class="fas fa-credit-card"></i> Book Test
+        </a>
+    }
+    else if (alreadyTaken && booking.CanStartTest)
+    {
+        // Retake slot is for the present time, allow retake
+        <a href="@Url.Action("ScheduledTest", "Test", new { id = booking.TestId, retake = "true" })" class="btn btn-start-test">
+            <i class="fas fa-redo"></i> Retake Test
+        </a>
+    }
+    else if (!alreadyTaken && booking.CanStartTest)
+    {
+        <a href="@Url.Action("ScheduledTest", "Test", new { id = booking.TestId, retake = "false" })" class="btn btn-start-test">
+            <i class="fas fa-play"></i> Start Test
+        </a>
+    }
+    else if (hasUpcomingBookingForButton)
+    {
+        <button class="btn btn-start-test" disabled title="You already have a future booking for this test.">
+            <i class="fas fa-redo"></i> Retake Test
+        </button>
+    }
+    else
+    {
+        <button class="btn btn-start-test" disabled>
+            <i class="fas fa-redo"></i> Retake Test
+        </button>
+    }
+}                                  else if (alreadyTaken)
+                                    {
+                                        <a href="@Url.Action("ReAttempt", "Test", new { id = booking.TestId })" class="btn btn-reattempt">
+                                            <i class="fas fa-redo"></i> Retake Test
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a href="#" class="btn btn-start-test" style="background: #6c757d; opacity: 0.7; cursor: not-allowed; pointer-events: none;">
+                                            <i class="fas fa-clock"></i> Start Test
+                                        </a>
+                                        <div class="mt-2 small text-muted">
+                                            <i class="fas fa-info-circle"></i> Available during your booked time slot (@bookingTimeDisplay)
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="no-bookings">
+                <i class="fas fa-calendar-times"></i>
+                <h4>No tests available right now</h4>
+                <p>You have tests booked, but they are not available at the current time.</p>
+                <p>Please check your booked time slots and return during those times.</p>
+
+                @if (ViewBag.AllBookings != null && ViewBag.AllBookings.Count > 0)
+                {
+                    <div class="alert alert-info mt-3">
+                        <h5><i class="fas fa-info-circle"></i> Your Booked Time Slots:</h5>
+                        <ul class="list-unstyled">
+                            @foreach (var booking in ViewBag.AllBookings)
+                            {
+                                string slotTimeDisplay = "";
+                                switch (booking.SlotNumber)
+                                {
+                                    case 1:
+                                        slotTimeDisplay = "9:00 AM - 11:00 AM";
+                                        break;
+                                    case 2:
+                                        slotTimeDisplay = "12:00 PM - 2:00 PM";
+                                        break;
+                                    case 3:
+                                        slotTimeDisplay = "3:00 PM - 5:00 PM";
+                                        break;
+                                    case 4:
+                                        slotTimeDisplay = "6:00 PM - 8:00 PM";
+                                        break;
+                                    default:
+                                        slotTimeDisplay = $"{booking.StartTime.ToString("hh:mm tt")} - {booking.EndTime.ToString("hh:mm tt")}";
+                                        break;
+                                }
+                                <li><strong>@booking.Test.Title:</strong> @booking.BookingDate.ToString("MMM dd, yyyy") at @slotTimeDisplay</li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Upcoming Bookings Section -->
+    <div class="booking-section">
+        <h2 class="section-title">
+            <i class="fas fa-clock"></i> Upcoming Tests
+        </h2>
+
+        @if (ViewBag.UpcomingBookings != null && ViewBag.UpcomingBookings.Count > 0)
+        {
+            <div class="row">
+                @foreach (var booking in ViewBag.UpcomingBookings)
+                {
+                    <div class="col-md-6 col-lg-4">
+                        <div class="booking-card">
+                            <div class="booking-header">
+                                <div class="booking-title">@booking.Test.Title</div>
+                                <div class="booking-status">
+                                    <div class="status-indicator status-upcoming"></div>
+                                    <span class="badge badge-upcoming">Upcoming</span>
+                                </div>
+                            </div>
+                            <div class="booking-body">
+                                <div class="booking-info">
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Date</div>
+                                        <div class="booking-info-value">@booking.BookingDate.ToString("MMM dd, yyyy")</div>
+                                    </div>
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Time Slot</div>
+                                        <div class="booking-info-value">
+                                            @{
+                                                string slotTimeDisplay = "";
+                                                switch (booking.SlotNumber)
+                                                {
+                                                    case 1:
+                                                        slotTimeDisplay = "9:00 AM - 11:00 AM";
+                                                        break;
+                                                    case 2:
+                                                        slotTimeDisplay = "12:00 PM - 2:00 PM";
+                                                        break;
+                                                    case 3:
+                                                        slotTimeDisplay = "3:00 PM - 5:00 PM";
+                                                        break;
+                                                    case 4:
+                                                        slotTimeDisplay = "6:00 PM - 8:00 PM";
+                                                        break;
+                                                    default:
+                                                        slotTimeDisplay = $"{booking.StartTime.ToString("hh:mm tt")} - {booking.EndTime.ToString("hh:mm tt")}";
+                                                        break;
+                                                }
+                                            }
+                                            @slotTimeDisplay
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="booking-info">
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Duration</div>
+                                        <div class="booking-info-value">@booking.Test.DurationMinutes minutes</div>
+                                    </div>
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Booked On</div>
+                                        <div class="booking-info-value">@booking.BookedAt.ToString("MMM dd, yyyy")</div>
+                                    </div>
+                                </div>
+                                <div class="booking-actions">
+                                    <a href="@Url.Action("ScheduledTest", "Test", new { id = booking.TestId })" class="btn btn-view-details">
+                                        <i class="fas fa-info-circle"></i> View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="no-bookings">
+                <i class="fas fa-calendar-alt"></i>
+                <h4>No upcoming tests</h4>
+                <p>You don't have any tests scheduled for the future.</p>
+                <a href="@Url.Action("Index", "Test")" class="btn btn-primary">
+                    <i class="fas fa-search"></i> Browse Available Tests
+                </a>
+
+                @if (ViewBag.AllBookings != null && ViewBag.AllBookings.Count > 0)
+                {
+                    <div class="alert alert-info mt-3">
+                        <h5><i class="fas fa-info-circle"></i> Your Booked Time Slots:</h5>
+                        <ul class="list-unstyled">
+                            @foreach (var booking in ViewBag.AllBookings)
+                            {
+                                string slotTimeDisplay = "";
+                                switch (booking.SlotNumber)
+                                {
+                                    case 1:
+                                        slotTimeDisplay = "9:00 AM - 11:00 AM";
+                                        break;
+                                    case 2:
+                                        slotTimeDisplay = "12:00 PM - 2:00 PM";
+                                        break;
+                                    case 3:
+                                        slotTimeDisplay = "3:00 PM - 5:00 PM";
+                                        break;
+                                    case 4:
+                                        slotTimeDisplay = "6:00 PM - 8:00 PM";
+                                        break;
+                                    default:
+                                        slotTimeDisplay = $"{booking.StartTime.ToString("hh:mm tt")} - {booking.EndTime.ToString("hh:mm tt")}";
+                                        break;
+                                }
+                                <li><strong>@booking.Test.Title:</strong> @booking.BookingDate.ToString("MMM dd, yyyy") at @slotTimeDisplay</li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <!-- Past Bookings Section -->
+    <div class="booking-section">
+        <h2 class="section-title">
+            <i class="fas fa-history"></i> Past Tests
+        </h2>
+
+        @if (ViewBag.PastBookings != null && ViewBag.PastBookings.Count > 0)
+        {
+            <div class="row">
+                @foreach (var booking in ViewBag.PastBookings)
+                {
+                    bool alreadyTaken = false;
+                    if (ViewBag.TestResults != null)
+                    {
+                        foreach (var result in ViewBag.TestResults)
+                        {
+                            if (result.TestId == booking.TestId)
+                            {
+                                alreadyTaken = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="booking-card">
+                            <div class="booking-header">
+                                <div class="booking-title">@booking.Test.Title</div>
+                                <div class="booking-status">
+                                    @if (alreadyTaken)
+                                    {
+                                        <div class="status-indicator status-taken"></div>
+                                        <span class="badge badge-taken">Completed</span>
+                                    }
+                                    else
+                                    {
+                                        <div class="status-indicator status-expired"></div>
+                                        <span class="badge badge-expired">Expired</span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="booking-body">
+                                <div class="booking-info">
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Date</div>
+                                        <div class="booking-info-value">@booking.BookingDate.ToString("MMM dd, yyyy")</div>
+                                    </div>
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Time Slot</div>
+                                        <div class="booking-info-value">
+                                            @{
+                                                string slotTimeDisplay = "";
+                                                switch (booking.SlotNumber)
+                                                {
+                                                    case 1:
+                                                        slotTimeDisplay = "9:00 AM - 11:00 AM";
+                                                        break;
+                                                    case 2:
+                                                        slotTimeDisplay = "12:00 PM - 2:00 PM";
+                                                        break;
+                                                    case 3:
+                                                        slotTimeDisplay = "3:00 PM - 5:00 PM";
+                                                        break;
+                                                    case 4:
+                                                        slotTimeDisplay = "6:00 PM - 8:00 PM";
+                                                        break;
+                                                    default:
+                                                        slotTimeDisplay = $"{booking.StartTime.ToString("hh:mm tt")} - {booking.EndTime.ToString("hh:mm tt")}";
+                                                        break;
+                                                }
+                                            }
+                                            @slotTimeDisplay
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="booking-info">
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Duration</div>
+                                        <div class="booking-info-value">@booking.Test.DurationMinutes minutes</div>
+                                    </div>
+                                    <div class="booking-info-item">
+                                        <div class="booking-info-label">Booked On</div>
+                                        <div class="booking-info-value">@booking.BookedAt.ToString("MMM dd, yyyy")</div>
+                                    </div>
+                                </div>
+                                <div class="booking-actions">
+                                    @if (alreadyTaken)
+                                    {
+                                        <a href="@Url.Action("History", "Test")" class="btn btn-view-details">
+                                            <i class="fas fa-eye"></i> View Results
+                                        </a>
+
+                                        <a href="@Url.Action("ReAttempt", "Test", new { id = booking.TestId })" class="btn btn-reattempt">
+                                            <i class="fas fa-redo"></i> Retake Test
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Time slot expired</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="no-bookings">
+                <i class="fas fa-calendar-check"></i>
+                <h4>No past tests</h4>
+                <p>You don't have any expired test bookings.</p>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Auto-refresh the page when coming from test creation or payment
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromTestCreation = urlParams.get('fromTestCreation');
+            const refresh = urlParams.get('refresh');
+            const testId = urlParams.get('testId');
+            const message = urlParams.get('message');
+
+            console.log('URL params:', { refresh, testId, message });
+
+            // Check if we need to refresh (either from test creation or payment)
+            const needsRefresh = fromTestCreation === 'true' ||
+                                (refresh === 'true' && testId);
+
+            if (needsRefresh) {
+                console.log('Page needs refresh with testId:', testId);
+
+                // Check if we've already refreshed once (to prevent infinite refreshes)
+                const hasRefreshed = sessionStorage.getItem('hasRefreshed_' + testId);
+
+                if (!hasRefreshed) {
+                    // Mark that we've refreshed for this testId
+                    sessionStorage.setItem('hasRefreshed_' + testId, 'true');
+
+                    // Remove the parameter from URL to prevent infinite refreshes
+                    const newUrl = window.location.pathname + '?refresh=true' + (testId ? '&testId=' + testId : '');
+                    window.history.replaceState({}, document.title, newUrl);
+
+                    // Show loading message
+                    const loadingMessage = document.createElement('div');
+                    loadingMessage.className = 'alert alert-info alert-dismissible fade show';
+                    loadingMessage.innerHTML = '<i class="fas fa-sync-alt fa-spin me-2"></i> Refreshing dashboard to show your latest bookings...';
+
+                    const container = document.querySelector('.container');
+                    container.insertBefore(loadingMessage, container.firstChild);
+
+                    // Force a hard refresh after a short delay
+                    setTimeout(function() {
+                        try {
+                            // Add a timestamp to force a fresh request
+                            const refreshUrl = '@Url.Action("MyBookings", "Test")' +
+                                '?refresh=true' +
+                                (testId ? '&testId=' + testId : '') +
+                                '&_=' + new Date().getTime();
+
+                            console.log('Refreshing to:', refreshUrl);
+                            window.location.href = refreshUrl;
+                        } catch (error) {
+                            console.error('Error during refresh:', error);
+                            // If there's an error, just reload the current page
+                            window.location.reload();
+                        }
+                    }, 2000); // 2 second delay
+                } else {
+                    // We've already refreshed once, clear the session storage
+                    console.log('Already refreshed once for testId:', testId);
+                    sessionStorage.removeItem('hasRefreshed_' + testId);
+                }
+            }
+
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Auto-dismiss alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 5000);
+        });
+    </script>
+}

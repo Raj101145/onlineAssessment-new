@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "Debug Bookings";
+}
+
+<div class="container py-5">
+    <h1 class="mb-4">Debug Bookings</h1>
+    <p class="text-muted">This page shows detailed information about your bookings for debugging purposes.</p>
+
+    <div class="alert alert-info">
+        <h4>Current Time</h4>
+        <p>@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</p>
+    </div>
+
+    <h2 class="mt-4">All Bookings</h2>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Test Title</th>
+                    <th>Booking Date</th>
+                    <th>Start Time</th>
+                    <th>End Time</th>
+                    <th>Slot</th>
+                    <th>Category</th>
+                    <th>Can Start Test</th>
+                    <th>Comparison</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (ViewBag.AllBookings != null)
+                {
+                    foreach (var booking in ViewBag.AllBookings)
+                    {
+                        var now = DateTime.Now;
+
+                        // Create proper DateTime objects for comparison
+                        var bookingStartDateTime = new DateTime(
+                            booking.BookingDate.Year,
+                            booking.BookingDate.Month,
+                            booking.BookingDate.Day,
+                            booking.StartTime.Hour,
+                            booking.StartTime.Minute,
+                            booking.StartTime.Second);
+
+                        var bookingEndDateTime = new DateTime(
+                            booking.BookingDate.Year,
+                            booking.BookingDate.Month,
+                            booking.BookingDate.Day,
+                            booking.EndTime.Hour,
+                            booking.EndTime.Minute,
+                            booking.EndTime.Second);
+
+                        bool isFutureYear = bookingStartDateTime.Year > now.Year;
+                        bool isSameYear = bookingStartDateTime.Year == now.Year;
+                        bool isFutureMonth = isSameYear && bookingStartDateTime.Month > now.Month;
+                        bool isSameMonth = isSameYear && bookingStartDateTime.Month == now.Month;
+                        bool isFutureDay = isSameMonth && bookingStartDateTime.Day > now.Day;
+                        bool isSameDay = isSameMonth && bookingStartDateTime.Day == now.Day;
+                        bool isFutureHour = isSameDay && bookingStartDateTime.Hour > now.Hour;
+                        bool isSameHour = isSameDay && bookingStartDateTime.Hour == now.Hour;
+                        bool isFutureMinute = isSameHour && bookingStartDateTime.Minute > now.Minute;
+                        bool isSameMinute = isSameHour && bookingStartDateTime.Minute == now.Minute;
+                        bool isFutureSecond = isSameMinute && bookingStartDateTime.Second > now.Second;
+
+                        bool isUpcoming = isFutureYear || isFutureMonth || isFutureDay || (isSameDay && (isFutureHour || (isSameHour && (isFutureMinute || (isSameMinute && isFutureSecond)))));
+                        bool isPast = !isUpcoming && (now > bookingEndDateTime);
+                        bool isCurrent = !isUpcoming && !isPast;
+
+                        string category = isUpcoming ? "Upcoming" : (isCurrent ? "Current" : "Past");
+
+                        <tr>
+                            <td>@booking.Id</td>
+                            <td>@booking.Test.Title</td>
+                            <td>@booking.BookingDate.ToString("yyyy-MM-dd")</td>
+                            <td>@booking.StartTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>@booking.EndTime.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                            <td>@booking.SlotNumber</td>
+                            <td>@category</td>
+                            <td>@booking.CanStartTest</td>
+                            <td>
+                                <small>
+                                    bookingStartDateTime: @bookingStartDateTime.ToString("yyyy-MM-dd HH:mm:ss")<br />
+                                    bookingEndDateTime: @bookingEndDateTime.ToString("yyyy-MM-dd HH:mm:ss")<br />
+                                    now: @now.ToString("yyyy-MM-dd HH:mm:ss")<br />
+                                    now &lt; bookingStartDateTime: @(now < bookingStartDateTime)<br />
+                                    now &gt; bookingEndDateTime: @(now > bookingEndDateTime)<br />
+                                    isFutureYear: @isFutureYear<br />
+                                    isSameYear: @isSameYear<br />
+                                    isFutureMonth: @isFutureMonth<br />
+                                    isSameMonth: @isSameMonth<br />
+                                    isFutureDay: @isFutureDay<br />
+                                    isSameDay: @isSameDay<br />
+                                    isFutureHour: @isFutureHour<br />
+                                    isSameHour: @isSameHour<br />
+                                    isFutureMinute: @isFutureMinute<br />
+                                    isSameMinute: @isSameMinute<br />
+                                    isFutureSecond: @isFutureSecond<br />
+                                </small>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="text-center">No bookings found</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

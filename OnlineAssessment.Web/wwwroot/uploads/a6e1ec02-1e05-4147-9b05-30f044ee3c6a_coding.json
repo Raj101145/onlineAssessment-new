@@ -1,0 +1,17 @@
+[
+  {
+    "Text": "Write a function to calculate the factorial of a number",
+    "Type": 1,
+    "TestId": 123,
+    "TestCases": [
+      {
+        "Input": "5",
+        "ExpectedOutput": "120"
+      },
+      {
+        "Input": "0",
+        "ExpectedOutput": "1"
+      }
+    ]
+  }
+]

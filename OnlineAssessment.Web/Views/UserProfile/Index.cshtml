@@ -1,0 +1,327 @@
+@model OnlineAssessment.Web.Models.User
+@{
+    ViewData["Title"] = "User Profile";
+}
+
+@section Styles {
+    <style>
+        .profile-section {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: calc(100vh - 80px);
+            padding: 2rem 0;
+        }
+
+        .profile-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-header {
+            background: #3498db;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .profile-img-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 1.5rem;
+        }
+
+        .profile-img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 5px solid white;
+            object-fit: cover;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-body {
+            padding: 2rem;
+        }
+
+        .profile-info-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-info-value {
+            font-size: 1.1rem;
+            color: #2c3e50;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .profile-role-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .role-candidate {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .role-organization {
+            background-color: #2ecc71;
+            color: white;
+        }
+
+        .sap-id-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+            background-color: #f8f9fa;
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+}
+
+<div class="profile-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="profile-card">
+                    <div class="profile-header">
+                        <div class="profile-img-container">
+                            @if (Model.Role == OnlineAssessment.Web.Models.UserRole.Organization && ViewBag.Organization != null)
+                            {
+                                @if (!string.IsNullOrEmpty(ViewBag.Organization.LogoUrl))
+                                {
+                                    <img src="@ViewBag.Organization.LogoUrl" alt="@ViewBag.Organization.Name" class="profile-img" />
+                                }
+                                else
+                                {
+                                    <img src="/images/default-profile.png" alt="@ViewBag.Organization.Name" class="profile-img" />
+                                }
+                            }
+                            else if (!string.IsNullOrEmpty(Model.PhotoUrl))
+                            {
+                                <img src="@Model.PhotoUrl" alt="@Model.Username" class="profile-img" />
+                            }
+                            else
+                            {
+                                <img src="/images/default-profile.png" alt="@Model.Username" class="profile-img" />
+                            }
+                        </div>
+                        @if (Model.Role == OnlineAssessment.Web.Models.UserRole.Organization && ViewBag.Organization != null)
+                        {
+                            <h2>@ViewBag.Organization.Name</h2>
+                            <p>@Model.Username</p>
+                            @try
+                            {
+                                <div class="sap-id-badge">
+                                    <i class="fas fa-id-card"></i> SAP ID: @(string.IsNullOrEmpty(ViewBag.Organization.SapId) ? "Not assigned" : ViewBag.Organization.SapId)
+                                </div>
+                            }
+                            catch
+                            {
+                                <div class="sap-id-badge">
+                                    <i class="fas fa-id-card"></i> SAP ID: Not assigned
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <h2>@Model.FirstName @Model.LastName</h2>
+                            <p>@Model.Username</p>
+                            @try
+                            {
+                                <div class="sap-id-badge">
+                                    <i class="fas fa-id-card"></i> SAP ID: @(string.IsNullOrEmpty(Model.SapId) ? "Not assigned" : Model.SapId)
+                                </div>
+                            }
+                            catch
+                            {
+                                <div class="sap-id-badge">
+                                    <i class="fas fa-id-card"></i> SAP ID: Not assigned
+                                </div>
+                            }
+                        }
+                        <div class="profile-role-badge role-@Model.Role.ToString().ToLower()">
+                            @Model.Role.ToString()
+                        </div>
+                    </div>
+                    <div class="profile-body">
+                        @if (Model.Role == OnlineAssessment.Web.Models.UserRole.Organization && ViewBag.Organization != null)
+                        {
+                            <!-- Organization Profile Information -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="profile-info-item">
+                                        <div class="profile-info-label">
+                                            <i class="fas fa-envelope me-2"></i> Email
+                                        </div>
+                                        <div class="profile-info-value">
+                                            @ViewBag.Organization.Email
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="profile-info-item">
+                                        <div class="profile-info-label">
+                                            <i class="fas fa-phone me-2"></i> Phone Number
+                                        </div>
+                                        <div class="profile-info-value">
+                                            @(string.IsNullOrEmpty(ViewBag.Organization.PhoneNumber) ? "Not provided" : ViewBag.Organization.PhoneNumber)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="profile-info-item">
+                                        <div class="profile-info-label">
+                                            <i class="fas fa-user me-2"></i> Contact Person
+                                        </div>
+                                        <div class="profile-info-value">
+                                            @ViewBag.Organization.ContactPerson
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="profile-info-item">
+                                        <div class="profile-info-label">
+                                            <i class="fas fa-globe me-2"></i> Website
+                                        </div>
+                                        <div class="profile-info-value">
+                                            @(string.IsNullOrEmpty(ViewBag.Organization.Website) ? "Not provided" : ViewBag.Organization.Website)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="profile-info-item">
+                                        <div class="profile-info-label">
+                                            <i class="fas fa-map-marker-alt me-2"></i> Address
+                                        </div>
+                                        <div class="profile-info-value">
+                                            @(string.IsNullOrEmpty(ViewBag.Organization.Address) ? "Not provided" : ViewBag.Organization.Address)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="profile-info-item">
+                                        <div class="profile-info-label">
+                                            <i class="fas fa-info-circle me-2"></i> Description
+                                        </div>
+                                        <div class="profile-info-value">
+                                            @(string.IsNullOrEmpty(ViewBag.Organization.Description) ? "Not provided" : ViewBag.Organization.Description)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Candidate Profile Information -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="profile-info-item">
+                                        <div class="profile-info-label">
+                                            <i class="fas fa-envelope me-2"></i> Email
+                                        </div>
+                                        <div class="profile-info-value">
+                                            @Model.Email
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="profile-info-item">
+                                        <div class="profile-info-label">
+                                            <i class="fas fa-phone me-2"></i> Mobile Number
+                                        </div>
+                                        <div class="profile-info-value">
+                                            @(string.IsNullOrEmpty(Model.MobileNumber) ? "Not provided" : Model.MobileNumber)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="profile-info-item">
+                                        <div class="profile-info-label">
+                                            <i class="fas fa-graduation-cap me-2"></i> Education
+                                        </div>
+                                        <div class="profile-info-value">
+                                            @(Model.Education != null ? Model.Education.ToString() : "Not provided")
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="profile-info-item">
+                                        <div class="profile-info-label">
+                                            <i class="fas fa-briefcase me-2"></i> Employment Status
+                                        </div>
+                                        <div class="profile-info-value">
+                                            @(Model.Employment != null ? Model.Employment.ToString() : "Not provided")
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.Role == OnlineAssessment.Web.Models.UserRole.Candidate)
+                        {
+                            @if (!string.IsNullOrEmpty(Model.KeySkills))
+                            {
+                                <div class="profile-info-item">
+                                    <div class="profile-info-label">
+                                        <i class="fas fa-tools me-2"></i> Key Skills
+                                    </div>
+                                    <div class="profile-info-value">
+                                        @Model.KeySkills
+                                    </div>
+                                </div>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Category))
+                            {
+                                <div class="profile-info-item">
+                                    <div class="profile-info-label">
+                                        <i class="fas fa-tag me-2"></i> Category
+                                    </div>
+                                    <div class="profile-info-value">
+                                        @Model.Category
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // You can add profile-related JavaScript here if needed
+    </script>
+}

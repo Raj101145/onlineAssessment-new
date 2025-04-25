@@ -1,0 +1,738 @@
+@{
+    ViewData["Title"] = "Awards & Recognition";
+    Layout = "_Layout";
+}
+
+@section Scripts {
+    <script>
+        // Redirect to registration page
+        window.location.href = '/Auth/Register';
+    </script>
+}
+
+@section Styles {
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #ff9800;
+            --dark-color: #333;
+            --light-color: #f4f4f4;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #f0f4f8 0%, #d7e3fc 100%);
+            padding: 120px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#e9ecef 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.4;
+            animation: pulse 10s infinite alternate;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+            color: #333;
+            text-align: left;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #0d6efd, #4361ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            color: #6c757d;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            text-align: left;
+        }
+
+        /* Award Image Container */
+        .award-image-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .award-main-image {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 50%;
+            box-shadow: 0 20px 40px rgba(13, 110, 253, 0.15);
+            border: 8px solid white;
+            background: white;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.3s ease;
+        }
+
+        .award-main-image:hover {
+            transform: scale(1.05);
+        }
+
+        .award-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #0d6efd, #4361ee);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: 0 10px 20px rgba(13, 110, 253, 0.2);
+            border: 4px solid white;
+            z-index: 3;
+            animation: pulse 2s infinite;
+        }
+
+        .decoration-circle {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.1;
+            background: linear-gradient(135deg, #0d6efd, #4361ee);
+        }
+
+        .circle-1 {
+            width: 200px;
+            height: 200px;
+            top: -30px;
+            left: -30px;
+            animation: float 6s infinite alternate;
+        }
+
+        .circle-2 {
+            width: 150px;
+            height: 150px;
+            bottom: 20px;
+            right: 20px;
+            animation: float 4s infinite alternate-reverse;
+        }
+
+        .circle-3 {
+            width: 100px;
+            height: 100px;
+            top: 50%;
+            right: -20px;
+            animation: float 5s infinite alternate;
+        }
+
+        .award-badge-text {
+            background: linear-gradient(135deg, #0d6efd, #4361ee);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 20px rgba(13, 110, 253, 0.15);
+            display: inline-flex;
+            align-items: center;
+        }
+
+        @@keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @@keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Awards Section */
+        .awards-section {
+            padding: 80px 0;
+            background-color: #fff;
+        }
+
+        .section-title {
+            position: relative;
+            margin-bottom: 60px;
+            text-align: center;
+            font-weight: 800;
+            font-size: 2.5rem;
+            color: var(--dark-color);
+        }
+
+        .section-title:after {
+            content: '';
+            display: block;
+            width: 100px;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary-color), #4361ee);
+            margin: 20px auto 0;
+            border-radius: 5px;
+        }
+
+        .section-title span {
+            color: var(--primary-color);
+        }
+
+        /* Award Card */
+        .award-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            height: 100%;
+            border: none;
+            position: relative;
+        }
+
+        .award-card-link {
+            display: block;
+            height: 100%;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .award-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .award-image {
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d7e3fc 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .award-image::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+            transition: all 0.5s ease;
+            opacity: 0;
+        }
+
+        .award-card:hover .award-image::before {
+            opacity: 1;
+            transform: rotate(0deg);
+        }
+
+        .award-image img {
+            max-height: 140px;
+            max-width: 100%;
+            object-fit: contain;
+            transition: all 0.4s ease;
+        }
+
+        .award-card:hover .award-image img {
+            transform: scale(1.05);
+        }
+
+        .award-content {
+            padding: 30px;
+            position: relative;
+        }
+
+        .award-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--dark-color);
+            font-size: 1.3rem;
+        }
+
+        .award-subtitle {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+            line-height: 1.4;
+        }
+
+        .award-description {
+            color: #6c757d;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .award-date {
+            font-size: 0.9rem;
+            color: #adb5bd;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .award-date i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .achievement-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary-color), #4361ee);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+            transition: all 0.3s ease;
+        }
+
+        .award-card:hover .achievement-badge {
+            transform: rotate(360deg);
+        }
+
+        /* Stats Section */
+        .stats-section {
+            padding: 100px 0;
+            background: linear-gradient(135deg, #f0f4f8 0%, #d7e3fc 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#e9ecef 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.4;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            height: 100%;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary-color), #4361ee);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card:hover::after {
+            transform: scaleX(1);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), #4361ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover .stat-icon {
+            transform: scale(1.1);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 15px;
+            background: linear-gradient(to right, var(--primary-color), #4361ee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            line-height: 1.2;
+        }
+
+        .stat-title {
+            color: #495057;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Responsive Styles */
+        @@media (max-width: 991px) {
+            .hero-section {
+                padding: 80px 0;
+            }
+
+            .award-image-container {
+                width: 300px;
+                height: 300px;
+                margin: 0 auto 40px;
+            }
+
+            .award-main-image {
+                width: 250px;
+                height: 250px;
+            }
+
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .stats-section {
+                padding: 80px 0;
+            }
+
+            .stat-card {
+                margin-bottom: 30px;
+            }
+        }
+
+        @@media (max-width: 768px) {
+            .section-title {
+                font-size: 2.2rem;
+                margin-bottom: 50px;
+            }
+
+            .section-title:after {
+                width: 80px;
+                height: 4px;
+                margin: 15px auto 0;
+            }
+
+            .award-image {
+                height: 160px;
+            }
+
+            .award-image img {
+                max-height: 120px;
+            }
+
+            .award-content {
+                padding: 25px;
+            }
+
+            .award-title {
+                font-size: 1.2rem;
+            }
+
+            .award-subtitle {
+                font-size: 1rem;
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+            }
+
+            .stat-icon {
+                font-size: 2.2rem;
+            }
+
+            .stat-title {
+                font-size: 1rem;
+            }
+
+            .stat-card {
+                padding: 30px 20px;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .section-title {
+                font-size: 1.8rem;
+                margin-bottom: 40px;
+            }
+
+            .award-image-container {
+                width: 250px;
+                height: 250px;
+            }
+
+            .award-main-image {
+                width: 200px;
+                height: 200px;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .partner-logo {
+                height: 90px;
+            }
+
+            .partner-logo img {
+                max-height: 50px;
+            }
+        }
+    </style>
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <!-- Left Column - Award Image -->
+            <div class="col-lg-5 mb-4 mb-lg-0">
+                <div class="position-relative" style="animation: float 3s ease-in-out infinite;">
+                    <div class="award-image-container">
+                        <img src="~/img/intern/awards/9.png" alt="APAC Insider Award" class="img-fluid award-main-image">
+                        <div class="award-badge">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <!-- Decorative Elements -->
+                        <div class="decoration-circle circle-1"></div>
+                        <div class="decoration-circle circle-2"></div>
+                        <div class="decoration-circle circle-3"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Right Column - Text Content -->
+            <div class="col-lg-7 hero-content">
+                <div class="award-badge-container mb-4 text-center text-lg-start">
+                    <span class="award-badge-text">
+                        <i class="fas fa-star me-2"></i>
+                        APAC INSIDER BUSINESS AWARDS
+                    </span>
+                </div>
+                <h1 class="hero-title mb-4 text-center text-lg-start">Award-Winning <br><span class="gradient-text">Excellence</span></h1>
+                <p class="hero-subtitle text-center text-lg-start mx-auto mx-lg-0">Recognized as the Best Employment Training Support Business 2024 - India and Investment Banking Services Excellence Award 2024</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Awards Section -->
+<section class="awards-section">
+    <div class="container">
+        <h2 class="section-title">Awards & <span>Recognition</span></h2>
+        <div class="row g-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="award-card">
+                    <a href="#" class="award-card-link">
+                        <div class="award-image">
+                            <img src="~/img/intern/awards/8.png" alt="Silicon India Recognition">
+                        </div>
+                        <div class="award-content">
+                            <h4 class="award-title">Silicon India Magazine</h4>
+                            <h5 class="award-subtitle">10 Most Promising Recruitment Companies in Mumbai - 2022</h5>
+                            <p class="award-description">Recognized for our initiative of Unemployment-Free India and being one of the most promising recruitment companies in Mumbai.</p>
+                            <div class="award-date">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>2022</span>
+                            </div>
+                            <div class="achievement-badge">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="award-card">
+                    <a href="#" class="award-card-link">
+                        <div class="award-image">
+                            <img src="~/img/intern/awards/9.png" alt="APAC Business Awards 2022">
+                        </div>
+                        <div class="award-content">
+                            <h4 class="award-title">APAC Business Awards 2022</h4>
+                            <h5 class="award-subtitle">Best Placement & Skill Development Service Provider - India</h5>
+                            <p class="award-description">Recognized for our dedication to skill development and placement services across India.</p>
+                            <div class="award-date">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>2022</span>
+                            </div>
+                            <div class="achievement-badge">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="award-card">
+                    <a href="#" class="award-card-link">
+                        <div class="award-image">
+                            <img src="~/img/intern/awards/9.png" alt="APAC Business Awards 2023">
+                        </div>
+                        <div class="award-content">
+                            <h4 class="award-title">APAC Insider Business Awards 2023</h4>
+                            <h5 class="award-subtitle">Best Employment Training Support Enterprise 2023 - India</h5>
+                            <p class="award-description">Recognized for excellence in providing employment training support services and emerging victorious in the APAC Business Awards 2023.</p>
+                            <div class="award-date">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>2023</span>
+                            </div>
+                            <div class="achievement-badge">
+                                <i class="fas fa-medal"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="award-card">
+                    <a href="#" class="award-card-link">
+                        <div class="award-image">
+                            <img src="~/img/intern/awards/9.png" alt="APAC Insider Business Awards 2024">
+                        </div>
+                        <div class="award-content">
+                            <h4 class="award-title">APAC Insider Business Awards 2024</h4>
+                            <h5 class="award-subtitle">Best Employment Training Support Business 2024 - India</h5>
+                            <p class="award-description">Recognized for excellence in providing quality employment training support services across India.</p>
+                            <div class="award-date">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>2024</span>
+                            </div>
+                            <div class="achievement-badge">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="award-card">
+                    <a href="#" class="award-card-link">
+                        <div class="award-image">
+                            <img src="~/img/intern/awards/9.png" alt="APAC Insider Investment Banking Award">
+                        </div>
+                        <div class="award-content">
+                            <h4 class="award-title">APAC Insider Business Awards 2024</h4>
+                            <h5 class="award-subtitle">Investment Banking Services Excellence Award</h5>
+                            <p class="award-description">Recognized for outstanding services and excellence in the investment banking sector across the Asia Pacific region.</p>
+                            <div class="award-date">
+                                <i class="far fa-calendar-alt"></i>
+                                <span>2024</span>
+                            </div>
+                            <div class="achievement-badge">
+                                <i class="fas fa-award"></i>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <h2 class="section-title">Our <span>Impact</span></h2>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3 class="stat-number">12,000+</h3>
+                    <p class="stat-title">Candidates Trained and Placed</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h3 class="stat-number">25,000+</h3>
+                    <p class="stat-title">Candidates Placed Through Job Fairs</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h3 class="stat-number">500+</h3>
+                    <p class="stat-title">Corporate Partners</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3 class="stat-number">15+</h3>
+                    <p class="stat-title">Awards & Recognitions</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

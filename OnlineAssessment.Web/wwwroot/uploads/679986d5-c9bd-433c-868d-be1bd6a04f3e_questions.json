@@ -1,0 +1,30 @@
+{
+  "codingQuestions": [
+    {
+      "text": "Reverse a string",
+      "type": 1,
+      "testId": 1,
+      "functionName": "reverseString",
+      "returnType": "string",
+      "returnDescription": "The reversed string",
+      "constraints": ["1 <= s.length <= 1000"],
+      "starterCode": {
+        "java": "public String reverseString(String s) {\n    // Write your code here\n}"
+      },
+      "parameters": [
+        {
+          "name": "s",
+          "type": "string",
+          "description": "The string to reverse"
+        }
+      ],
+      "testCases": [
+        {
+          "input": "\"hello\"",
+          "expectedOutput": "\"olleh\"",
+          "explanation": "The string 'hello' reversed is 'olleh'"
+        }
+      ]
+    }
+  ]
+}
