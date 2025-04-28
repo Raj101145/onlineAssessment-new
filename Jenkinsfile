@@ -1,15 +1,19 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven 3.9.1' // MUST match the Maven name configured in Global Tool Configuration
+    }
+
     environment {
         PROJECT_NAME = 'OnlineAssessment'
         BRANCH_NAME = 'main'
-        SONAR_HOST_URL = 'http://your.sonarqube.server'  // Your SonarQube server URL
-        SONAR_PROJECT_KEY = 'your_project_key'           // Replace with your project key
-        MAVEN_HOME = '/opt/maven'                        // Path to Maven installation
-        EC2_USER = 'ec2-ubuntu'                         // EC2 username
-        EC2_IP = '100.27.229.169'                       // EC2 instance IP
-        DEPLOY_PATH = '/path/to/deployment'              // Path where the artifact will be deployed
+        SONAR_HOST_URL = 'http://your.sonarqube.server'     // Replace with your real SonarQube server URL
+        SONAR_PROJECT_KEY = 'your_project_key'              // Replace with your SonarQube project key
+        EC2_USER = 'ubuntu'                                 // Likely 'ubuntu' for EC2 Ubuntu instances
+        EC2_IP = '100.27.229.169'                           // Your EC2 public IP
+        DEPLOY_PATH = '/path/to/deployment'                 // Path where you want to copy the JAR
+        PRIVATE_KEY_PATH = '/path/to/your/private-key.pem'  // Path to your .pem SSH key
     }
 
     stages {
@@ -18,49 +22,42 @@ pipeline {
                 git branch: "${BRANCH_NAME}", url: 'https://github.com/Raj101145/onlineAssessment-new'
             }
         }
-        
-        stage('Install Maven') {
-            steps {
-                script {
-                    // Ensure Maven is installed and available in the PATH
-                    sh 'which mvn || echo "Maven not found, installing..."'
-                    sh 'sudo apt-get update && sudo apt-get install -y maven'
-                }
-            }
-        }
 
         stage('Build') {
             steps {
-                script {
-                    // Use Maven to build the project
-                    sh 'mvn clean install -DskipTests=true'
-                }
+                sh 'mvn clean install -DskipTests=true'
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    // Run tests using Maven
-                    sh 'mvn test'
-                }
+                sh 'mvn test'
             }
         }
 
         stage('SonarQube Analysis') {
             steps {
-                script {
-                    // Perform SonarQube analysis with Maven
-                    sh "mvn sonar:sonar -Dsonar.projectKey=${SONAR_PROJECT_KEY} -Dsonar.host.url=${SONAR_HOST_URL}"
+                withSonarQubeEnv('YourSonarQubeServer') { // Name of the Sonar server in Jenkins config
+                    sh """
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.host.url=${SONAR_HOST_URL}
+                    """
                 }
             }
         }
 
-        stage('Deploy') {
+        stage('Deploy to EC2') {
             steps {
                 script {
-                    // Deploy the built artifact to EC2
-                    sh "scp -i /path/to/your/private-key.pem target/your-artifact.jar ${EC2_USER}@${EC2_IP}:${DEPLOY_PATH}"
+                    // Dynamically find the generated jar
+                    def jarName = sh(script: "ls target/*.jar | grep -v 'original-' | xargs basename", returnStdout: true).trim()
+                    
+                    // Copy the artifact to EC2
+                    sh """
+                        chmod 400 ${PRIVATE_KEY_PATH}
+                        scp -o StrictHostKeyChecking=no -i ${PRIVATE_KEY_PATH} target/${jarName} ${EC2_USER}@${EC2_IP}:${DEPLOY_PATH}/
+                    """
                 }
             }
         }
@@ -68,13 +65,13 @@ pipeline {
 
     post {
         success {
-            echo 'Build succeeded! Deployment was successful.'
+            echo '✅ Build, Test, SonarQube Analysis, and Deployment completed successfully!'
         }
         failure {
-            echo 'Build failed. Please check the logs.'
+            echo '❌ Build failed. Please check the pipeline logs.'
         }
         always {
-            echo 'Cleaning up or sending notifications...'
+            echo 'ℹ️ Pipeline completed. Sending notifications (optional).'
         }
     }
 }
